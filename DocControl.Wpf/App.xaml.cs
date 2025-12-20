@@ -1,34 +1,40 @@
+﻿using System.IO;
+using System.Windows;
 using DocControl.AI;
 using DocControl.Core.Configuration;
+using DocControl.Core.Security;
 using DocControl.Infrastructure.Data;
 using DocControl.Infrastructure.Presentation;
-using DocControl.Core.Security;
 using DocControl.Infrastructure.Services;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace DocControl
+namespace DocControl.Wpf
 {
-    internal static class Program
+    /// <summary>
+    /// Interaction logic for App.xaml
+    /// </summary>
+    public partial class App : Application
     {
-        [STAThread]
-        static void Main()
+        private ServiceProvider? serviceProvider;
+
+        protected override async void OnStartup(StartupEventArgs e)
         {
-            ApplicationConfiguration.Initialize();
+            base.OnStartup(e);
 
             var services = new ServiceCollection();
 
             var dbPath = Path.Combine(AppContext.BaseDirectory, "doccontrol.db");
             var dbFactory = new DbConnectionFactory(dbPath);
             var initializer = new DatabaseInitializer(dbFactory);
-            initializer.EnsureCreatedAsync().GetAwaiter().GetResult();
+            await initializer.EnsureCreatedAsync();
 
             var configRepo = new ConfigRepository(dbFactory);
             var credentialStore = new CredentialManagerApiKeyStore();
             var configService = new ConfigService(configRepo, credentialStore);
 
-            var documentConfig = configService.LoadDocumentConfigAsync().GetAwaiter().GetResult();
-            var aiSettings = configService.LoadAiSettingsAsync().GetAwaiter().GetResult();
-            var aiOptions = AiOptionsBuilder.BuildAsync(aiSettings, credentialStore).GetAwaiter().GetResult();
+            var documentConfig = await configService.LoadDocumentConfigAsync();
+            var aiSettings = await configService.LoadAiSettingsAsync();
+            var aiOptions = await AiOptionsBuilder.BuildAsync(aiSettings, credentialStore);
 
             services.AddSingleton(dbFactory);
             services.AddSingleton(configRepo);
@@ -57,15 +63,22 @@ namespace DocControl
             services.AddSingleton<DocumentImportService>();
             services.AddSingleton<MainController>();
 
-            services.AddSingleton<Form1>(provider => new Form1(
+            services.AddSingleton<MainWindow>(provider => new MainWindow(
                 provider.GetRequiredService<MainController>(),
                 provider.GetRequiredService<DocumentConfig>(),
                 provider.GetRequiredService<AiSettings>(),
                 provider.GetRequiredService<AiClientOptions>()));
 
-            using var provider = services.BuildServiceProvider();
+            serviceProvider = services.BuildServiceProvider();
 
-            Application.Run(provider.GetRequiredService<Form1>());
+            var mainWindow = serviceProvider.GetRequiredService<MainWindow>();
+            mainWindow.Show();
+        }
+
+        protected override void OnExit(ExitEventArgs e)
+        {
+            serviceProvider?.Dispose();
+            base.OnExit(e);
         }
     }
 }

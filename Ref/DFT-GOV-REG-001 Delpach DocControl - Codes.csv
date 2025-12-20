@@ -1,0 +1,60 @@
+Level,Code,Code Description
+1,DFS,Delpach Family Solutions Pty Ltd
+1,DFT,Delpach Family Trust
+1,DSF,DFS Superannuation Fund
+1,JAS,Jasmine
+1,KHL,Khloe 
+1,LIO,Lionel
+1,MIC,Michael
+2,BNK,Bank
+2,EDU,Education
+2,ENT,Entertainment
+2,FIN,Financial
+2,GAI,Generative AI
+2,GFT,Gifts or Donations
+2,GOV,Governance
+2,HLT,Health / Medical
+2,HSE,Household
+2,JOB,Job Applications
+2,KYC,Know Your Customer
+2,MNT,Maintenance
+2,WAR,Warranty
+3,AGE,Agenda
+3,ANL,Analysis
+3,ASG,Assignment
+3,ASM,Assessment
+3,BST,Brainstorming
+3,CAL,Calculations
+3,CHK,Checklist
+3,CLM,Claim
+3,CNT,Contract
+3,CRT,Certificate
+3,CSV,Comma Separated Values
+3,DAS,Dashboard
+3,DRL,Driver's Licence
+3,DVD,Digital Video Disc
+3,FRM,Form
+3,FRW,Framework
+3,GDL,Guideline
+3,INV,Invoice
+3,ITN,Itinerary
+3,LBD,Legally Binding Document
+3,LTR,Letter
+3,MOM,Minutes of Meeting
+3,OPT,Optioneering
+3,PAY,Payslip
+3,PLN,Plan
+3,POA,Proof of Address
+3,POW,Proof of Wealth
+3,PPT,Presentation
+3,PRC,Process
+3,PRP,Proposal
+3,RAS,Risk Assessment
+3,RCT,Receipt
+3,RCV,Resume/CV
+3,REG,Register
+3,RPT,Report
+3,SCH,Schedule
+3,SCR,Selection Criteria
+3,STA,Statement
+3,VIS,Photo or Video

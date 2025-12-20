@@ -4,14 +4,14 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
-    <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../DocControl.Core/DocControl.Core.csproj" />
-    <ProjectReference Include="../DocControl.Infrastructure/DocControl.Infrastructure.csproj" />
-    <ProjectReference Include="../DocControl.AI/DocControl.AI.csproj" />
+    <ProjectReference Include="..\DocControl.Core\DocControl.Core.csproj" />
+    <ProjectReference Include="..\DocControl.Infrastructure\DocControl.Infrastructure.csproj" />
+    <ProjectReference Include="..\DocControl.AI\DocControl.AI.csproj" />
   </ItemGroup>
 
   <ItemGroup>
