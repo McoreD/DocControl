@@ -53,6 +53,7 @@ namespace DocControl
             services.AddSingleton<RecommendationService>();
             services.AddSingleton<NlqService>();
             services.AddSingleton<CodeImportService>();
+            services.AddSingleton<DocumentImportService>();
 
             services.AddSingleton<Form1>(provider => new Form1(
                 provider.GetRequiredService<DocumentService>(),
@@ -66,7 +67,8 @@ namespace DocControl
                 provider.GetRequiredService<RecommendationService>(),
                 provider.GetRequiredService<DocumentRepository>(),
                 provider.GetRequiredService<CodeImportService>(),
-                provider.GetRequiredService<CodeSeriesRepository>()
+                provider.GetRequiredService<CodeSeriesRepository>(),
+                provider.GetRequiredService<DocumentImportService>()
             ));
 
             using var provider = services.BuildServiceProvider();

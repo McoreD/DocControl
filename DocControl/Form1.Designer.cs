@@ -1,37 +1,30 @@
-﻿using System.Windows.Forms;
+﻿using System.ComponentModel;
+using System.Drawing;
+using System.Windows.Forms;
 
 namespace DocControl
 {
-    partial class Form1 : Form
+    partial class Form1
     {
-        /// <summary>
-        ///  Required designer variable.
-        /// </summary>
-        private System.ComponentModel.IContainer components = null;
+        private IContainer components = null;
 
-        /// <summary>
-        ///  Clean up any resources being used.
-        /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
-            if (disposing && (components != null))
+            if (disposing && components != null)
             {
                 components.Dispose();
             }
+
             base.Dispose(disposing);
         }
 
         #region Windows Form Designer generated code
 
-        /// <summary>
-        ///  Required method for Designer support - do not modify
-        ///  the contents of this method with the code editor.
-        /// </summary>
         private void InitializeComponent()
         {
             tabControl1 = new TabControl();
             tabGenerate = new TabPage();
+            lblNoDelete = new Label();
             lblGenerateResult = new Label();
             btnGenerate = new Button();
             txtExtension = new TextBox();
@@ -47,21 +40,19 @@ namespace DocControl
             label3 = new Label();
             cmbLevel1 = new ComboBox();
             label2 = new Label();
+
             tabImport = new TabPage();
+            lblImportPerSeries = new Label();
             lblImportResult = new Label();
-            btnImport = new Button();
-            btnBrowseImport = new Button();
-            txtImportFolder = new TextBox();
-            label8 = new Label();
-            lstImportInvalid = new ListBox();
-            btnImportCsv = new Button();
-            btnBrowseCsv = new Button();
-            txtImportCsv = new TextBox();
-            label16 = new Label();
+            lblImportNote = new Label();
+            chkSeedCounters = new CheckBox();
+            btnSeedSelected = new Button();
             lvImportSummary = new ListView();
             colSeries = new ColumnHeader();
             colMaxNum = new ColumnHeader();
             colNextNum = new ColumnHeader();
+            lstImportInvalid = new ListBox();
+
             tabRecommend = new TabPage();
             txtNlqResult = new TextBox();
             btnInterpret = new Button();
@@ -72,6 +63,7 @@ namespace DocControl
             btnUseSuggested = new Button();
             btnCreateRecommended = new Button();
             lblRecommendInfo = new Label();
+
             tabSettings = new TabPage();
             btnSaveSettings = new Button();
             txtGeminiKey = new TextBox();
@@ -89,26 +81,24 @@ namespace DocControl
             txtSeparator = new TextBox();
             label1 = new Label();
             chkSettingsEnableLevel4 = new CheckBox();
+
             tabAudit = new TabPage();
             btnAuditRefresh = new Button();
-            lvAudit = new ListView();
-            colAction = new ColumnHeader();
-            colBy = new ColumnHeader();
-            colAt = new ColumnHeader();
-            colPayload = new ColumnHeader();
-            colDocId = new ColumnHeader();
             btnAuditFilter = new Button();
+            btnAuditPrev = new Button();
+            btnAuditNext = new Button();
+            lblAuditPage = new Label();
             txtAuditAction = new TextBox();
             txtAuditUser = new TextBox();
             labelAuditAction = new Label();
             labelAuditUser = new Label();
-            chkSeedCounters = new CheckBox();
-            btnAuditPrev = new Button();
-            btnAuditNext = new Button();
-            lblAuditPage = new Label();
-            lblNoDelete = new Label();
-            lblImportNote = new Label();
-            btnSeedSelected = new Button();
+            lvAudit = new ListView();
+            colAt = new ColumnHeader();
+            colBy = new ColumnHeader();
+            colAction = new ColumnHeader();
+            colPayload = new ColumnHeader();
+            colDocId = new ColumnHeader();
+
             tabDocs = new TabPage();
             btnDocsRefresh = new Button();
             lvDocs = new ListView();
@@ -116,19 +106,20 @@ namespace DocControl
             colDocFile = new ColumnHeader();
             colDocBy = new ColumnHeader();
             colDocAt = new ColumnHeader();
-            lblImportPerSeries = new Label();
+            lblImportPerSeriesDocs = new Label();
+            btnImportCsv = new Button();
+
             tabControl1.SuspendLayout();
             tabGenerate.SuspendLayout();
             tabImport.SuspendLayout();
             tabRecommend.SuspendLayout();
             tabSettings.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)numPadding).BeginInit();
+            ((ISupportInitialize)numPadding).BeginInit();
             tabAudit.SuspendLayout();
             tabDocs.SuspendLayout();
             SuspendLayout();
-            // 
+
             // tabControl1
-            // 
             tabControl1.Controls.Add(tabGenerate);
             tabControl1.Controls.Add(tabImport);
             tabControl1.Controls.Add(tabRecommend);
@@ -141,9 +132,9 @@ namespace DocControl
             tabControl1.SelectedIndex = 0;
             tabControl1.Size = new Size(784, 461);
             tabControl1.TabIndex = 0;
-            // 
+
             // tabGenerate
-            // 
+            tabGenerate.Controls.Add(lblNoDelete);
             tabGenerate.Controls.Add(lblGenerateResult);
             tabGenerate.Controls.Add(btnGenerate);
             tabGenerate.Controls.Add(txtExtension);
@@ -159,7 +150,6 @@ namespace DocControl
             tabGenerate.Controls.Add(label3);
             tabGenerate.Controls.Add(cmbLevel1);
             tabGenerate.Controls.Add(label2);
-            tabGenerate.Controls.Add(lblNoDelete);
             tabGenerate.Location = new Point(4, 24);
             tabGenerate.Name = "tabGenerate";
             tabGenerate.Padding = new Padding(3);
@@ -167,128 +157,16 @@ namespace DocControl
             tabGenerate.TabIndex = 0;
             tabGenerate.Text = "Generate";
             tabGenerate.UseVisualStyleBackColor = true;
-            // 
-            // lblGenerateResult
-            // 
-            lblGenerateResult.AutoSize = true;
-            lblGenerateResult.Location = new Point(24, 278);
-            lblGenerateResult.Name = "lblGenerateResult";
-            lblGenerateResult.Size = new Size(0, 15);
-            lblGenerateResult.TabIndex = 14;
-            // 
-            // btnGenerate
-            // 
-            btnGenerate.Location = new Point(24, 239);
-            btnGenerate.Name = "btnGenerate";
-            btnGenerate.Size = new Size(135, 27);
-            btnGenerate.TabIndex = 13;
-            btnGenerate.Text = "Generate";
-            btnGenerate.UseVisualStyleBackColor = true;
-            btnGenerate.Click += btnGenerate_Click;
-            // 
-            // txtExtension
-            // 
-            txtExtension.Location = new Point(104, 196);
-            txtExtension.Name = "txtExtension";
-            txtExtension.Size = new Size(200, 23);
-            txtExtension.TabIndex = 12;
-            // 
-            // label7
-            // 
-            label7.AutoSize = true;
-            label7.Location = new Point(24, 199);
-            label7.Name = "label7";
-            label7.Size = new Size(60, 15);
-            label7.TabIndex = 11;
-            label7.Text = "Extension";
-            // 
-            // txtFreeText
-            // 
-            txtFreeText.Location = new Point(104, 160);
-            txtFreeText.Name = "txtFreeText";
-            txtFreeText.Size = new Size(400, 23);
-            txtFreeText.TabIndex = 10;
-            // 
-            // label6
-            // 
-            label6.AutoSize = true;
-            label6.Location = new Point(24, 163);
-            label6.Name = "label6";
-            label6.Size = new Size(55, 15);
-            label6.TabIndex = 9;
-            label6.Text = "Free Text";
-            // 
-            // chkEnableLevel4
-            // 
-            chkEnableLevel4.AutoSize = true;
-            chkEnableLevel4.Location = new Point(24, 129);
-            chkEnableLevel4.Name = "chkEnableLevel4";
-            chkEnableLevel4.Size = new Size(101, 19);
-            chkEnableLevel4.TabIndex = 8;
-            chkEnableLevel4.Text = "Enable Level4";
-            chkEnableLevel4.UseVisualStyleBackColor = true;
-            chkEnableLevel4.CheckedChanged += chkEnableLevel4_CheckedChanged;
-            // 
-            // cmbLevel4
-            // 
-            cmbLevel4.DropDownStyle = ComboBoxStyle.DropDown;
-            cmbLevel4.FormattingEnabled = true;
-            cmbLevel4.Location = new Point(352, 96);
-            cmbLevel4.Name = "cmbLevel4";
-            cmbLevel4.Size = new Size(152, 23);
-            cmbLevel4.TabIndex = 7;
-            // 
-            // label5
-            // 
-            label5.AutoSize = true;
-            label5.Location = new Point(296, 99);
-            label5.Name = "label5";
-            label5.Size = new Size(44, 15);
-            label5.TabIndex = 6;
-            label5.Text = "Level4";
-            // 
-            // cmbLevel3
-            // 
-            cmbLevel3.DropDownStyle = ComboBoxStyle.DropDown;
-            cmbLevel3.FormattingEnabled = true;
-            cmbLevel3.Location = new Point(104, 96);
-            cmbLevel3.Name = "cmbLevel3";
-            cmbLevel3.Size = new Size(152, 23);
-            cmbLevel3.TabIndex = 5;
-            cmbLevel3.SelectedIndexChanged += cmbLevel3_SelectedIndexChanged;
-            cmbLevel3.TextChanged += cmbLevel3_TextChanged;
-            // 
-            // label4
-            // 
-            label4.AutoSize = true;
-            label4.Location = new Point(24, 99);
-            label4.Name = "label4";
-            label4.Size = new Size(44, 15);
-            label4.TabIndex = 4;
-            label4.Text = "Level3";
-            // 
-            // cmbLevel2
-            // 
-            cmbLevel2.DropDownStyle = ComboBoxStyle.DropDown;
-            cmbLevel2.FormattingEnabled = true;
-            cmbLevel2.Location = new Point(352, 57);
-            cmbLevel2.Name = "cmbLevel2";
-            cmbLevel2.Size = new Size(152, 23);
-            cmbLevel2.TabIndex = 3;
-            cmbLevel2.SelectedIndexChanged += cmbLevel2_SelectedIndexChanged;
-            cmbLevel2.TextChanged += cmbLevel2_TextChanged;
-            // 
-            // label3
-            // 
-            label3.AutoSize = true;
-            label3.Location = new Point(296, 60);
-            label3.Name = "label3";
-            label3.Size = new Size(44, 15);
-            label3.TabIndex = 2;
-            label3.Text = "Level2";
-            // 
+
+            // label2
+            label2.AutoSize = true;
+            label2.Location = new Point(24, 60);
+            label2.Name = "label2";
+            label2.Size = new Size(42, 15);
+            label2.TabIndex = 0;
+            label2.Text = "Level1";
+
             // cmbLevel1
-            // 
             cmbLevel1.DropDownStyle = ComboBoxStyle.DropDown;
             cmbLevel1.FormattingEnabled = true;
             cmbLevel1.Location = new Point(104, 57);
@@ -297,43 +175,128 @@ namespace DocControl
             cmbLevel1.TabIndex = 1;
             cmbLevel1.SelectedIndexChanged += cmbLevel1_SelectedIndexChanged;
             cmbLevel1.TextChanged += cmbLevel1_TextChanged;
-            // 
-            // label2
-            // 
-            label2.AutoSize = true;
-            label2.Location = new Point(24, 60);
-            label2.Name = "label2";
-            label2.Size = new Size(44, 15);
-            label2.TabIndex = 0;
-            label2.Text = "Level1";
-            // 
+
+            // label3
+            label3.AutoSize = true;
+            label3.Location = new Point(296, 60);
+            label3.Name = "label3";
+            label3.Size = new Size(42, 15);
+            label3.TabIndex = 2;
+            label3.Text = "Level2";
+
+            // cmbLevel2
+            cmbLevel2.DropDownStyle = ComboBoxStyle.DropDown;
+            cmbLevel2.FormattingEnabled = true;
+            cmbLevel2.Location = new Point(352, 57);
+            cmbLevel2.Name = "cmbLevel2";
+            cmbLevel2.Size = new Size(152, 23);
+            cmbLevel2.TabIndex = 3;
+            cmbLevel2.SelectedIndexChanged += cmbLevel2_SelectedIndexChanged;
+            cmbLevel2.TextChanged += cmbLevel2_TextChanged;
+
+            // label4
+            label4.AutoSize = true;
+            label4.Location = new Point(24, 99);
+            label4.Name = "label4";
+            label4.Size = new Size(42, 15);
+            label4.TabIndex = 4;
+            label4.Text = "Level3";
+
+            // cmbLevel3
+            cmbLevel3.DropDownStyle = ComboBoxStyle.DropDown;
+            cmbLevel3.FormattingEnabled = true;
+            cmbLevel3.Location = new Point(104, 96);
+            cmbLevel3.Name = "cmbLevel3";
+            cmbLevel3.Size = new Size(152, 23);
+            cmbLevel3.TabIndex = 5;
+            cmbLevel3.SelectedIndexChanged += cmbLevel3_SelectedIndexChanged;
+            cmbLevel3.TextChanged += cmbLevel3_TextChanged;
+
+            // label5
+            label5.AutoSize = true;
+            label5.Location = new Point(296, 99);
+            label5.Name = "label5";
+            label5.Size = new Size(42, 15);
+            label5.TabIndex = 6;
+            label5.Text = "Level4";
+
+            // cmbLevel4
+            cmbLevel4.DropDownStyle = ComboBoxStyle.DropDown;
+            cmbLevel4.FormattingEnabled = true;
+            cmbLevel4.Location = new Point(352, 96);
+            cmbLevel4.Name = "cmbLevel4";
+            cmbLevel4.Size = new Size(152, 23);
+            cmbLevel4.TabIndex = 7;
+
+            // chkEnableLevel4
+            chkEnableLevel4.AutoSize = true;
+            chkEnableLevel4.Location = new Point(24, 129);
+            chkEnableLevel4.Name = "chkEnableLevel4";
+            chkEnableLevel4.Size = new Size(99, 19);
+            chkEnableLevel4.TabIndex = 8;
+            chkEnableLevel4.Text = "Enable Level4";
+            chkEnableLevel4.UseVisualStyleBackColor = true;
+            chkEnableLevel4.CheckedChanged += chkEnableLevel4_CheckedChanged;
+
+            // label6
+            label6.AutoSize = true;
+            label6.Location = new Point(24, 163);
+            label6.Name = "label6";
+            label6.Size = new Size(55, 15);
+            label6.TabIndex = 9;
+            label6.Text = "Free Text";
+
+            // txtFreeText
+            txtFreeText.Location = new Point(104, 160);
+            txtFreeText.Name = "txtFreeText";
+            txtFreeText.Size = new Size(400, 23);
+            txtFreeText.TabIndex = 10;
+
+            // label7
+            label7.AutoSize = true;
+            label7.Location = new Point(24, 199);
+            label7.Name = "label7";
+            label7.Size = new Size(60, 15);
+            label7.TabIndex = 11;
+            label7.Text = "Extension";
+
+            // txtExtension
+            txtExtension.Location = new Point(104, 196);
+            txtExtension.Name = "txtExtension";
+            txtExtension.Size = new Size(200, 23);
+            txtExtension.TabIndex = 12;
+
+            // btnGenerate
+            btnGenerate.Location = new Point(24, 239);
+            btnGenerate.Name = "btnGenerate";
+            btnGenerate.Size = new Size(135, 27);
+            btnGenerate.TabIndex = 13;
+            btnGenerate.Text = "Generate";
+            btnGenerate.UseVisualStyleBackColor = true;
+            btnGenerate.Click += btnGenerate_Click;
+
+            // lblGenerateResult
+            lblGenerateResult.AutoSize = true;
+            lblGenerateResult.Location = new Point(24, 278);
+            lblGenerateResult.Name = "lblGenerateResult";
+            lblGenerateResult.Size = new Size(0, 15);
+            lblGenerateResult.TabIndex = 14;
+
             // lblNoDelete
-            // 
             lblNoDelete.AutoSize = true;
-            lblNoDelete.ForeColor = Color.Red;
-            lblNoDelete.Location = new Point(24, 310);
+            lblNoDelete.Location = new Point(24, 24);
             lblNoDelete.Name = "lblNoDelete";
-            lblNoDelete.Size = new Size(210, 15);
+            lblNoDelete.Size = new Size(0, 15);
             lblNoDelete.TabIndex = 15;
-            lblNoDelete.Text = "No deletions allowed. All actions audited.";
-            // 
+
             // tabImport
-            // 
-            tabImport.Controls.Add(lblImportResult);
-            tabImport.Controls.Add(btnImport);
-            tabImport.Controls.Add(btnBrowseImport);
-            tabImport.Controls.Add(txtImportFolder);
-            tabImport.Controls.Add(label8);
-            tabImport.Controls.Add(lstImportInvalid);
-            tabImport.Controls.Add(btnImportCsv);
-            tabImport.Controls.Add(btnBrowseCsv);
-            tabImport.Controls.Add(txtImportCsv);
-            tabImport.Controls.Add(label16);
-            tabImport.Controls.Add(lvImportSummary);
-            tabImport.Controls.Add(lblImportNote);
-            tabImport.Controls.Add(chkSeedCounters);
-            tabImport.Controls.Add(btnSeedSelected);
             tabImport.Controls.Add(lblImportPerSeries);
+            tabImport.Controls.Add(lvImportSummary);
+            tabImport.Controls.Add(btnSeedSelected);
+            tabImport.Controls.Add(chkSeedCounters);
+            tabImport.Controls.Add(lblImportNote);
+            tabImport.Controls.Add(lblImportResult);
+            tabImport.Controls.Add(lstImportInvalid);
             tabImport.Location = new Point(4, 24);
             tabImport.Name = "tabImport";
             tabImport.Padding = new Padding(3);
@@ -341,138 +304,80 @@ namespace DocControl
             tabImport.TabIndex = 1;
             tabImport.Text = "Import";
             tabImport.UseVisualStyleBackColor = true;
-            // 
-            // lblImportResult
-            // 
-            lblImportResult.AutoSize = true;
-            lblImportResult.Location = new Point(24, 70);
-            lblImportResult.Name = "lblImportResult";
-            lblImportResult.Size = new Size(0, 15);
-            lblImportResult.TabIndex = 4;
-            // 
-            // btnImport
-            // 
-            btnImport.Location = new Point(24, 34);
-            btnImport.Name = "btnImport";
-            btnImport.Size = new Size(135, 27);
-            btnImport.TabIndex = 3;
-            btnImport.Text = "Import";
-            btnImport.UseVisualStyleBackColor = true;
-            btnImport.Click += btnImport_Click;
-            // 
-            // btnBrowseImport
-            // 
-            btnBrowseImport.Location = new Point(666, 22);
-            btnBrowseImport.Name = "btnBrowseImport";
-            btnBrowseImport.Size = new Size(75, 23);
-            btnBrowseImport.TabIndex = 2;
-            btnBrowseImport.Text = "Browse";
-            btnBrowseImport.UseVisualStyleBackColor = true;
-            btnBrowseImport.Click += btnBrowseImport_Click;
-            // 
-            // txtImportFolder
-            // 
-            txtImportFolder.Location = new Point(104, 22);
-            txtImportFolder.Name = "txtImportFolder";
-            txtImportFolder.Size = new Size(556, 23);
-            txtImportFolder.TabIndex = 1;
-            // 
-            // label8
-            // 
-            label8.AutoSize = true;
-            label8.Location = new Point(24, 25);
-            label8.Name = "label8";
-            label8.Size = new Size(69, 15);
-            label8.TabIndex = 0;
-            label8.Text = "Import path";
-            // 
-            // lstImportInvalid
-            // 
-            lstImportInvalid.FormattingEnabled = true;
-            lstImportInvalid.HorizontalScrollbar = true;
-            lstImportInvalid.ItemHeight = 15;
-            lstImportInvalid.Location = new Point(24, 134);
-            lstImportInvalid.Name = "lstImportInvalid";
-            lstImportInvalid.Size = new Size(717, 58);
-            lstImportInvalid.TabIndex = 5;
-            // 
-            // btnImportCsv
-            // 
-            btnImportCsv.Location = new Point(24, 99);
-            btnImportCsv.Name = "btnImportCsv";
-            btnImportCsv.Size = new Size(135, 27);
-            btnImportCsv.TabIndex = 9;
-            btnImportCsv.Text = "Import CSV";
-            btnImportCsv.UseVisualStyleBackColor = true;
-            btnImportCsv.Click += btnImportCsv_Click;
-            // 
-            // btnBrowseCsv
-            // 
-            btnBrowseCsv.Location = new Point(666, 99);
-            btnBrowseCsv.Name = "btnBrowseCsv";
-            btnBrowseCsv.Size = new Size(75, 23);
-            btnBrowseCsv.TabIndex = 8;
-            btnBrowseCsv.Text = "Browse";
-            btnBrowseCsv.UseVisualStyleBackColor = true;
-            btnBrowseCsv.Click += btnBrowseCsv_Click;
-            // 
-            // txtImportCsv
-            // 
-            txtImportCsv.Location = new Point(124, 99);
-            txtImportCsv.Name = "txtImportCsv";
-            txtImportCsv.Size = new Size(536, 23);
-            txtImportCsv.TabIndex = 7;
-            // 
-            // label16
-            // 
-            label16.AutoSize = true;
-            label16.Location = new Point(24, 102);
-            label16.Name = "label16";
-            label16.Size = new Size(93, 15);
-            label16.TabIndex = 6;
-            label16.Text = "CSV file (names)";
-            // 
+
+            // lblImportPerSeries
+            lblImportPerSeries.AutoSize = true;
+            lblImportPerSeries.Location = new Point(24, 190);
+            lblImportPerSeries.Name = "lblImportPerSeries";
+            lblImportPerSeries.Size = new Size(0, 15);
+            lblImportPerSeries.TabIndex = 0;
+
             // lvImportSummary
-            // 
             lvImportSummary.Columns.AddRange(new ColumnHeader[] { colSeries, colMaxNum, colNextNum });
             lvImportSummary.FullRowSelect = true;
             lvImportSummary.GridLines = true;
-            lvImportSummary.Location = new Point(24, 200);
+            lvImportSummary.HideSelection = false;
+            lvImportSummary.Location = new Point(24, 24);
             lvImportSummary.Name = "lvImportSummary";
-            lvImportSummary.Size = new Size(717, 163);
-            lvImportSummary.TabIndex = 10;
+            lvImportSummary.Size = new Size(728, 158);
+            lvImportSummary.TabIndex = 4;
             lvImportSummary.UseCompatibleStateImageBehavior = false;
             lvImportSummary.View = View.Details;
+
             colSeries.Text = "Series";
-            colSeries.Width = 420;
-            colMaxNum.Text = "Max";
-            colMaxNum.Width = 80;
-            colNextNum.Text = "Next";
-            colNextNum.Width = 80;
-            // 
+            colSeries.Width = 120;
+
+            colMaxNum.Text = "Max Number";
+            colMaxNum.Width = 120;
+
+            colNextNum.Text = "Next Number";
+            colNextNum.Width = 120;
+
+            // btnSeedSelected
+            btnSeedSelected.Location = new Point(165, 220);
+            btnSeedSelected.Name = "btnSeedSelected";
+            btnSeedSelected.Size = new Size(135, 27);
+            btnSeedSelected.TabIndex = 6;
+            btnSeedSelected.Text = "Seed Selected";
+            btnSeedSelected.UseVisualStyleBackColor = true;
+            btnSeedSelected.Click += btnSeedSelected_Click;
+
+            // chkSeedCounters
+            chkSeedCounters.AutoSize = true;
+            chkSeedCounters.Location = new Point(24, 225);
+            chkSeedCounters.Name = "chkSeedCounters";
+            chkSeedCounters.Size = new Size(109, 19);
+            chkSeedCounters.TabIndex = 5;
+            chkSeedCounters.Text = "Seed Counters";
+            chkSeedCounters.UseVisualStyleBackColor = true;
+
             // lblImportNote
-            // 
             lblImportNote.AutoSize = true;
-            lblImportNote.Location = new Point(180, 69);
+            lblImportNote.Location = new Point(24, 255);
             lblImportNote.Name = "lblImportNote";
             lblImportNote.Size = new Size(0, 15);
-            lblImportNote.TabIndex = 12;
-            // 
-            // lblImportPerSeries
-            // 
-            lblImportPerSeries.AutoSize = true;
-            lblImportPerSeries.Location = new Point(24, 184);
-            lblImportPerSeries.Name = "lblImportPerSeries";
-            lblImportPerSeries.Size = new Size(260, 15);
-            lblImportPerSeries.TabIndex = 14;
-            lblImportPerSeries.Text = "Select series below and click 'Seed selected series'.";
-            // 
+            lblImportNote.TabIndex = 7;
+
+            // lblImportResult
+            lblImportResult.AutoSize = true;
+            lblImportResult.Location = new Point(24, 278);
+            lblImportResult.Name = "lblImportResult";
+            lblImportResult.Size = new Size(0, 15);
+            lblImportResult.TabIndex = 8;
+
+            // lstImportInvalid
+            lstImportInvalid.FormattingEnabled = true;
+            lstImportInvalid.ItemHeight = 15;
+            lstImportInvalid.Location = new Point(24, 311);
+            lstImportInvalid.Name = "lstImportInvalid";
+            lstImportInvalid.Size = new Size(728, 109);
+            lstImportInvalid.TabIndex = 9;
+
             // tabRecommend
-            // 
-            tabRecommend.Controls.Add(lblRecommendResult);
-            tabRecommend.Controls.Add(btnRecommend);
             tabRecommend.Controls.Add(txtNlqResult);
             tabRecommend.Controls.Add(btnInterpret);
+            tabRecommend.Controls.Add(btnRecommend);
+            tabRecommend.Controls.Add(lblRecommendResult);
             tabRecommend.Controls.Add(txtNlq);
             tabRecommend.Controls.Add(label9);
             tabRecommend.Controls.Add(btnUseSuggested);
@@ -480,81 +385,75 @@ namespace DocControl
             tabRecommend.Controls.Add(lblRecommendInfo);
             tabRecommend.Location = new Point(4, 24);
             tabRecommend.Name = "tabRecommend";
-            tabRecommend.Padding = new Padding(3);
             tabRecommend.Size = new Size(776, 433);
             tabRecommend.TabIndex = 2;
             tabRecommend.Text = "Recommend";
             tabRecommend.UseVisualStyleBackColor = true;
-            // 
-            // txtNlqResult
-            // 
-            txtNlqResult.Location = new Point(24, 96);
+
+            txtNlqResult.Location = new Point(24, 194);
             txtNlqResult.Multiline = true;
             txtNlqResult.Name = "txtNlqResult";
-            txtNlqResult.ReadOnly = true;
-            txtNlqResult.ScrollBars = ScrollBars.Vertical;
-            txtNlqResult.Size = new Size(717, 311);
-            txtNlqResult.TabIndex = 3;
-            // 
-            // btnInterpret
-            // 
-            btnInterpret.Location = new Point(666, 54);
+            txtNlqResult.Size = new Size(728, 158);
+            txtNlqResult.TabIndex = 8;
+
+            btnInterpret.Location = new Point(24, 165);
             btnInterpret.Name = "btnInterpret";
-            btnInterpret.Size = new Size(75, 27);
-            btnInterpret.TabIndex = 2;
-            btnInterpret.Text = "Interpret";
+            btnInterpret.Size = new Size(135, 27);
+            btnInterpret.TabIndex = 7;
+            btnInterpret.Text = "Interpret NLQ";
             btnInterpret.UseVisualStyleBackColor = true;
             btnInterpret.Click += btnInterpret_Click;
-            // 
-            // btnRecommend
-            // 
-            btnRecommend.Location = new Point(570, 20);
+
+            btnRecommend.Location = new Point(165, 165);
             btnRecommend.Name = "btnRecommend";
-            btnRecommend.Size = new Size(171, 27);
-            btnRecommend.TabIndex = 4;
-            btnRecommend.Text = "Recommend from levels";
+            btnRecommend.Size = new Size(135, 27);
+            btnRecommend.TabIndex = 6;
+            btnRecommend.Text = "Get Recommendation";
             btnRecommend.UseVisualStyleBackColor = true;
             btnRecommend.Click += btnRecommend_Click;
-            // 
-            // lblRecommendResult
-            // 
+
             lblRecommendResult.AutoSize = true;
-            lblRecommendResult.Location = new Point(24, 76);
+            lblRecommendResult.Location = new Point(24, 278);
             lblRecommendResult.Name = "lblRecommendResult";
             lblRecommendResult.Size = new Size(0, 15);
             lblRecommendResult.TabIndex = 5;
-            // 
-            // btnUseSuggested
-            // 
-            btnUseSuggested.Location = new Point(393, 20);
+
+            txtNlq.Location = new Point(104, 24);
+            txtNlq.Multiline = true;
+            txtNlq.Name = "txtNlq";
+            txtNlq.Size = new Size(648, 72);
+            txtNlq.TabIndex = 4;
+
+            label9.AutoSize = true;
+            label9.Location = new Point(24, 27);
+            label9.Name = "label9";
+            label9.Size = new Size(34, 15);
+            label9.TabIndex = 3;
+            label9.Text = "NLQ:";
+
+            btnUseSuggested.Location = new Point(24, 72);
             btnUseSuggested.Name = "btnUseSuggested";
-            btnUseSuggested.Size = new Size(171, 27);
-            btnUseSuggested.TabIndex = 6;
-            btnUseSuggested.Text = "Use suggested (confirm)";
+            btnUseSuggested.Size = new Size(135, 27);
+            btnUseSuggested.TabIndex = 2;
+            btnUseSuggested.Text = "Use Suggested";
             btnUseSuggested.UseVisualStyleBackColor = true;
             btnUseSuggested.Click += btnUseSuggested_Click;
-            // 
-            // btnCreateRecommended
-            // 
-            btnCreateRecommended.Location = new Point(216, 20);
+
+            btnCreateRecommended.Location = new Point(165, 72);
             btnCreateRecommended.Name = "btnCreateRecommended";
-            btnCreateRecommended.Size = new Size(171, 27);
-            btnCreateRecommended.TabIndex = 7;
-            btnCreateRecommended.Text = "Create (allocator)";
+            btnCreateRecommended.Size = new Size(135, 27);
+            btnCreateRecommended.TabIndex = 1;
+            btnCreateRecommended.Text = "Create Recommended";
             btnCreateRecommended.UseVisualStyleBackColor = true;
             btnCreateRecommended.Click += btnCreateRecommended_Click;
-            // 
-            // lblRecommendInfo
-            // 
+
             lblRecommendInfo.AutoSize = true;
-            lblRecommendInfo.Location = new Point(24, 54);
+            lblRecommendInfo.Location = new Point(24, 109);
             lblRecommendInfo.Name = "lblRecommendInfo";
-            lblRecommendInfo.Size = new Size(379, 15);
-            lblRecommendInfo.TabIndex = 8;
-            lblRecommendInfo.Text = "Allocator always picks next available number; suggested is advisory guidance.";
-            // 
+            lblRecommendInfo.Size = new Size(0, 15);
+            lblRecommendInfo.TabIndex = 0;
+
             // tabSettings
-            // 
             tabSettings.Controls.Add(btnSaveSettings);
             tabSettings.Controls.Add(txtGeminiKey);
             tabSettings.Controls.Add(label15);
@@ -573,280 +472,225 @@ namespace DocControl
             tabSettings.Controls.Add(chkSettingsEnableLevel4);
             tabSettings.Location = new Point(4, 24);
             tabSettings.Name = "tabSettings";
-            tabSettings.Padding = new Padding(3);
             tabSettings.Size = new Size(776, 433);
             tabSettings.TabIndex = 3;
             tabSettings.Text = "Settings";
             tabSettings.UseVisualStyleBackColor = true;
-            // 
-            // btnSaveSettings
-            // 
-            btnSaveSettings.Location = new Point(24, 273);
-            btnSaveSettings.Name = "btnSaveSettings";
-            btnSaveSettings.Size = new Size(135, 27);
-            btnSaveSettings.TabIndex = 15;
-            btnSaveSettings.Text = "Save";
-            btnSaveSettings.UseVisualStyleBackColor = true;
-            btnSaveSettings.Click += btnSaveSettings_Click;
-            // 
-            // txtGeminiKey
-            // 
-            txtGeminiKey.Location = new Point(120, 232);
-            txtGeminiKey.Name = "txtGeminiKey";
-            txtGeminiKey.PasswordChar = '*';
-            txtGeminiKey.Size = new Size(308, 23);
-            txtGeminiKey.TabIndex = 14;
-            // 
-            // label15
-            // 
-            label15.AutoSize = true;
-            label15.Location = new Point(24, 235);
-            label15.Name = "label15";
-            label15.Size = new Size(69, 15);
-            label15.TabIndex = 13;
-            label15.Text = "Gemini Key";
-            // 
-            // txtOpenAiKey
-            // 
-            txtOpenAiKey.Location = new Point(120, 195);
-            txtOpenAiKey.Name = "txtOpenAiKey";
-            txtOpenAiKey.PasswordChar = '*';
-            txtOpenAiKey.Size = new Size(308, 23);
-            txtOpenAiKey.TabIndex = 12;
-            // 
-            // label14
-            // 
-            label14.AutoSize = true;
-            label14.Location = new Point(24, 198);
-            label14.Name = "label14";
-            label14.Size = new Size(76, 15);
-            label14.TabIndex = 11;
-            label14.Text = "OpenAI Key";
-            // 
-            // txtGeminiModel
-            // 
-            txtGeminiModel.Location = new Point(120, 158);
-            txtGeminiModel.Name = "txtGeminiModel";
-            txtGeminiModel.Size = new Size(200, 23);
-            txtGeminiModel.TabIndex = 10;
-            // 
-            // label13
-            // 
-            label13.AutoSize = true;
-            label13.Location = new Point(24, 161);
-            label13.Name = "label13";
-            label13.Size = new Size(79, 15);
-            label13.TabIndex = 9;
-            label13.Text = "Gemini Model";
-            // 
-            // txtOpenAiModel
-            // 
-            txtOpenAiModel.Location = new Point(120, 121);
+
+            cmbProvider.DropDownStyle = ComboBoxStyle.DropDown;
+            cmbProvider.FormattingEnabled = true;
+            cmbProvider.Location = new Point(104, 24);
+            cmbProvider.Name = "cmbProvider";
+            cmbProvider.Size = new Size(152, 23);
+            cmbProvider.TabIndex = 6;
+
+            label11.AutoSize = true;
+            label11.Location = new Point(24, 27);
+            label11.Name = "label11";
+            label11.Size = new Size(57, 15);
+            label11.TabIndex = 5;
+            label11.Text = "Provider:";
+
+            chkSettingsEnableLevel4.AutoSize = true;
+            chkSettingsEnableLevel4.Location = new Point(24, 85);
+            chkSettingsEnableLevel4.Name = "chkSettingsEnableLevel4";
+            chkSettingsEnableLevel4.Size = new Size(99, 19);
+            chkSettingsEnableLevel4.TabIndex = 0;
+            chkSettingsEnableLevel4.Text = "Enable Level4";
+            chkSettingsEnableLevel4.UseVisualStyleBackColor = true;
+
+            txtSeparator.Location = new Point(104, 124);
+            txtSeparator.Name = "txtSeparator";
+            txtSeparator.Size = new Size(200, 23);
+            txtSeparator.TabIndex = 2;
+
+            label1.AutoSize = true;
+            label1.Location = new Point(24, 127);
+            label1.Name = "label1";
+            label1.Size = new Size(61, 15);
+            label1.TabIndex = 1;
+            label1.Text = "Separator:";
+
+            txtOpenAiModel.Location = new Point(104, 232);
             txtOpenAiModel.Name = "txtOpenAiModel";
-            txtOpenAiModel.Size = new Size(200, 23);
+            txtOpenAiModel.Size = new Size(648, 23);
             txtOpenAiModel.TabIndex = 8;
-            // 
-            // label12
-            // 
+
             label12.AutoSize = true;
-            label12.Location = new Point(24, 124);
+            label12.Location = new Point(24, 235);
             label12.Name = "label12";
             label12.Size = new Size(83, 15);
             label12.TabIndex = 7;
             label12.Text = "OpenAI Model";
-            // 
-            // cmbProvider
-            // 
-            cmbProvider.DropDownStyle = ComboBoxStyle.DropDownList;
-            cmbProvider.FormattingEnabled = true;
-            cmbProvider.Location = new Point(120, 84);
-            cmbProvider.Name = "cmbProvider";
-            cmbProvider.Size = new Size(151, 23);
-            cmbProvider.TabIndex = 6;
-            // 
-            // label11
-            // 
-            label11.AutoSize = true;
-            label11.Location = new Point(24, 87);
-            label11.Name = "label11";
-            label11.Size = new Size(54, 15);
-            label11.TabIndex = 5;
-            label11.Text = "Provider";
-            // 
-            // numPadding
-            // 
-            numPadding.Location = new Point(120, 48);
-            numPadding.Maximum = new decimal(new int[] { 10, 0, 0, 0 });
-            numPadding.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
-            numPadding.Name = "numPadding";
-            numPadding.Size = new Size(60, 23);
-            numPadding.TabIndex = 4;
-            numPadding.Value = new decimal(new int[] { 3, 0, 0, 0 });
-            // 
-            // label10
-            // 
+
+            txtGeminiModel.Location = new Point(104, 268);
+            txtGeminiModel.Name = "txtGeminiModel";
+            txtGeminiModel.Size = new Size(648, 23);
+            txtGeminiModel.TabIndex = 10;
+
+            label13.AutoSize = true;
+            label13.Location = new Point(24, 271);
+            label13.Name = "label13";
+            label13.Size = new Size(87, 15);
+            label13.TabIndex = 9;
+            label13.Text = "Gemini Model";
+
+            txtOpenAiKey.Location = new Point(104, 304);
+            txtOpenAiKey.Name = "txtOpenAiKey";
+            txtOpenAiKey.Size = new Size(648, 23);
+            txtOpenAiKey.TabIndex = 12;
+
+            label14.AutoSize = true;
+            label14.Location = new Point(24, 307);
+            label14.Name = "label14";
+            label14.Size = new Size(69, 15);
+            label14.TabIndex = 11;
+            label14.Text = "OpenAI Key";
+
+            txtGeminiKey.Location = new Point(104, 340);
+            txtGeminiKey.Name = "txtGeminiKey";
+            txtGeminiKey.Size = new Size(648, 23);
+            txtGeminiKey.TabIndex = 14;
+
+            label15.AutoSize = true;
+            label15.Location = new Point(24, 343);
+            label15.Name = "label15";
+            label15.Size = new Size(71, 15);
+            label15.TabIndex = 13;
+            label15.Text = "Gemini Key";
+
             label10.AutoSize = true;
-            label10.Location = new Point(24, 50);
+            label10.Location = new Point(24, 391);
             label10.Name = "label10";
-            label10.Size = new Size(49, 15);
+            label10.Size = new Size(55, 15);
             label10.TabIndex = 3;
-            label10.Text = "Padding";
-            // 
-            // txtSeparator
-            // 
-            txtSeparator.Location = new Point(120, 12);
-            txtSeparator.Name = "txtSeparator";
-            txtSeparator.Size = new Size(60, 23);
-            txtSeparator.TabIndex = 2;
-            // 
-            // label1
-            // 
-            label1.AutoSize = true;
-            label1.Location = new Point(24, 15);
-            label1.Name = "label1";
-            label1.Size = new Size(60, 15);
-            label1.TabIndex = 1;
-            label1.Text = "Separator";
-            // 
-            // chkSettingsEnableLevel4
-            // 
-            chkSettingsEnableLevel4.AutoSize = true;
-            chkSettingsEnableLevel4.Location = new Point(24, 50);
-            chkSettingsEnableLevel4.Name = "chkSettingsEnableLevel4";
-            chkSettingsEnableLevel4.Size = new Size(101, 19);
-            chkSettingsEnableLevel4.TabIndex = 0;
-            chkSettingsEnableLevel4.Text = "Enable Level4";
-            chkSettingsEnableLevel4.UseVisualStyleBackColor = true;
-            chkSettingsEnableLevel4.CheckedChanged += chkSettingsEnableLevel4_CheckedChanged;
-            // 
+            label10.Text = "Padding:";
+
+            numPadding.Location = new Point(104, 389);
+            numPadding.Name = "numPadding";
+            numPadding.Size = new Size(120, 23);
+            numPadding.TabIndex = 4;
+
+            btnSaveSettings.Location = new Point(24, 385);
+            btnSaveSettings.Name = "btnSaveSettings";
+            btnSaveSettings.Size = new Size(135, 27);
+            btnSaveSettings.TabIndex = 15;
+            btnSaveSettings.Text = "Save Settings";
+            btnSaveSettings.UseVisualStyleBackColor = true;
+            btnSaveSettings.Click += btnSaveSettings_Click;
+
             // tabAudit
-            // 
-            tabAudit.Controls.Add(labelAuditUser);
-            tabAudit.Controls.Add(labelAuditAction);
-            tabAudit.Controls.Add(txtAuditUser);
-            tabAudit.Controls.Add(txtAuditAction);
-            tabAudit.Controls.Add(btnAuditFilter);
-            tabAudit.Controls.Add(lvAudit);
             tabAudit.Controls.Add(btnAuditRefresh);
-            tabAudit.Controls.Add(lblAuditPage);
-            tabAudit.Controls.Add(btnAuditNext);
+            tabAudit.Controls.Add(btnAuditFilter);
             tabAudit.Controls.Add(btnAuditPrev);
+            tabAudit.Controls.Add(btnAuditNext);
+            tabAudit.Controls.Add(lblAuditPage);
+            tabAudit.Controls.Add(txtAuditAction);
+            tabAudit.Controls.Add(txtAuditUser);
+            tabAudit.Controls.Add(labelAuditAction);
+            tabAudit.Controls.Add(labelAuditUser);
+            tabAudit.Controls.Add(lvAudit);
             tabAudit.Location = new Point(4, 24);
             tabAudit.Name = "tabAudit";
-            tabAudit.Padding = new Padding(3);
             tabAudit.Size = new Size(776, 433);
             tabAudit.TabIndex = 4;
             tabAudit.Text = "Audit";
             tabAudit.UseVisualStyleBackColor = true;
-            // 
-            // lvAudit
-            // 
+
+            labelAuditAction.AutoSize = true;
+            labelAuditAction.Location = new Point(24, 27);
+            labelAuditAction.Name = "labelAuditAction";
+            labelAuditAction.Size = new Size(42, 15);
+            labelAuditAction.TabIndex = 0;
+            labelAuditAction.Text = "Action";
+
+            txtAuditAction.Location = new Point(104, 24);
+            txtAuditAction.Name = "txtAuditAction";
+            txtAuditAction.Size = new Size(152, 23);
+            txtAuditAction.TabIndex = 1;
+
+            labelAuditUser.AutoSize = true;
+            labelAuditUser.Location = new Point(24, 59);
+            labelAuditUser.Name = "labelAuditUser";
+            labelAuditUser.Size = new Size(34, 15);
+            labelAuditUser.TabIndex = 2;
+            labelAuditUser.Text = "User:";
+
+            txtAuditUser.Location = new Point(104, 56);
+            txtAuditUser.Name = "txtAuditUser";
+            txtAuditUser.Size = new Size(152, 23);
+            txtAuditUser.TabIndex = 3;
+
             lvAudit.Columns.AddRange(new ColumnHeader[] { colAt, colBy, colAction, colPayload, colDocId });
             lvAudit.FullRowSelect = true;
             lvAudit.GridLines = true;
-            lvAudit.Location = new Point(24, 58);
+            lvAudit.HideSelection = false;
+            lvAudit.Location = new Point(24, 90);
             lvAudit.Name = "lvAudit";
-            lvAudit.Size = new Size(727, 351);
-            lvAudit.TabIndex = 1;
+            lvAudit.Size = new Size(728, 280);
+            lvAudit.TabIndex = 4;
             lvAudit.UseCompatibleStateImageBehavior = false;
             lvAudit.View = View.Details;
-            lvAudit.DoubleClick += lvAudit_DoubleClick;
+
             colAt.Text = "At";
-            colAt.Width = 160;
+            colAt.Width = 120;
+
             colBy.Text = "By";
-            colBy.Width = 100;
+            colBy.Width = 120;
+
             colAction.Text = "Action";
             colAction.Width = 120;
+
             colPayload.Text = "Payload";
-            colPayload.Width = 250;
-            colDocId.Text = "DocId";
-            colDocId.Width = 80;
-            // 
-            // btnAuditRefresh
-            // 
-            btnAuditRefresh.Location = new Point(24, 20);
+            colPayload.Width = 245;
+
+            colDocId.Text = "Doc ID";
+            colDocId.Width = 120;
+
+            btnAuditRefresh.Location = new Point(24, 385);
             btnAuditRefresh.Name = "btnAuditRefresh";
             btnAuditRefresh.Size = new Size(135, 27);
-            btnAuditRefresh.TabIndex = 0;
+            btnAuditRefresh.TabIndex = 5;
             btnAuditRefresh.Text = "Refresh";
             btnAuditRefresh.UseVisualStyleBackColor = true;
             btnAuditRefresh.Click += btnAuditRefresh_Click;
-            // 
-            // btnAuditFilter
-            // 
-            btnAuditFilter.Location = new Point(560, 20);
+
+            btnAuditFilter.Location = new Point(165, 385);
             btnAuditFilter.Name = "btnAuditFilter";
             btnAuditFilter.Size = new Size(135, 27);
-            btnAuditFilter.TabIndex = 3;
-            btnAuditFilter.Text = "Filter";
+            btnAuditFilter.TabIndex = 6;
+            btnAuditFilter.Text = "Apply Filter";
             btnAuditFilter.UseVisualStyleBackColor = true;
             btnAuditFilter.Click += btnAuditFilter_Click;
-            // 
-            // btnAuditPrev
-            // 
-            btnAuditPrev.Location = new Point(520, 20);
+
+            btnAuditPrev.Location = new Point(429, 385);
             btnAuditPrev.Name = "btnAuditPrev";
-            btnAuditPrev.Size = new Size(30, 27);
-            btnAuditPrev.TabIndex = 8;
-            btnAuditPrev.Text = "<";
+            btnAuditPrev.Size = new Size(135, 27);
+            btnAuditPrev.TabIndex = 7;
+            btnAuditPrev.Text = "Previous";
             btnAuditPrev.UseVisualStyleBackColor = true;
             btnAuditPrev.Click += btnAuditPrev_Click;
-            // 
-            // btnAuditNext
-            // 
-            btnAuditNext.Location = new Point(700, 20);
+
+            btnAuditNext.Location = new Point(570, 385);
             btnAuditNext.Name = "btnAuditNext";
-            btnAuditNext.Size = new Size(30, 27);
-            btnAuditNext.TabIndex = 9;
-            btnAuditNext.Text = ">";
+            btnAuditNext.Size = new Size(135, 27);
+            btnAuditNext.TabIndex = 8;
+            btnAuditNext.Text = "Next";
             btnAuditNext.UseVisualStyleBackColor = true;
             btnAuditNext.Click += btnAuditNext_Click;
-            // 
-            // lblAuditPage
-            // 
+
             lblAuditPage.AutoSize = true;
-            lblAuditPage.Location = new Point(560, 25);
+            lblAuditPage.Location = new Point(24, 415);
             lblAuditPage.Name = "lblAuditPage";
-            lblAuditPage.Size = new Size(39, 15);
-            lblAuditPage.TabIndex = 10;
-            lblAuditPage.Text = "1 / ?";
-            // 
-            // labelAuditAction
-            // 
-            labelAuditAction.AutoSize = true;
-            labelAuditAction.Location = new Point(180, 25);
-            labelAuditAction.Name = "labelAuditAction";
-            labelAuditAction.Size = new Size(44, 15);
-            labelAuditAction.TabIndex = 4;
-            labelAuditAction.Text = "Action";
-            // 
-            // txtAuditAction
-            // 
-            txtAuditAction.Location = new Point(230, 22);
-            txtAuditAction.Name = "txtAuditAction";
-            txtAuditAction.Size = new Size(120, 23);
-            txtAuditAction.TabIndex = 5;
-            // 
-            // labelAuditUser
-            // 
-            labelAuditUser.AutoSize = true;
-            labelAuditUser.Location = new Point(370, 25);
-            labelAuditUser.Name = "labelAuditUser";
-            labelAuditUser.Size = new Size(31, 15);
-            labelAuditUser.TabIndex = 6;
-            labelAuditUser.Text = "User";
-            // 
-            // txtAuditUser
-            // 
-            txtAuditUser.Location = new Point(410, 22);
-            txtAuditUser.Name = "txtAuditUser";
-            txtAuditUser.Size = new Size(120, 23);
-            txtAuditUser.TabIndex = 7;
-            // 
+            lblAuditPage.Size = new Size(72, 15);
+            lblAuditPage.TabIndex = 9;
+            lblAuditPage.Text = "Page 1 / 1";
+
             // tabDocs
-            // 
-            tabDocs.Controls.Add(lvDocs);
             tabDocs.Controls.Add(btnDocsRefresh);
+            tabDocs.Controls.Add(lvDocs);
+            tabDocs.Controls.Add(lblImportPerSeriesDocs);
+            tabDocs.Controls.Add(btnImportCsv);
             tabDocs.Location = new Point(4, 24);
             tabDocs.Name = "tabDocs";
             tabDocs.Padding = new Padding(3);
@@ -854,46 +698,61 @@ namespace DocControl
             tabDocs.TabIndex = 5;
             tabDocs.Text = "Documents";
             tabDocs.UseVisualStyleBackColor = true;
-            // 
-            // btnDocsRefresh
-            // 
-            btnDocsRefresh.Location = new Point(24, 20);
-            btnDocsRefresh.Name = "btnDocsRefresh";
-            btnDocsRefresh.Size = new Size(135, 27);
-            btnDocsRefresh.TabIndex = 0;
-            btnDocsRefresh.Text = "Refresh";
-            btnDocsRefresh.UseVisualStyleBackColor = true;
-            btnDocsRefresh.Click += btnDocsRefresh_Click;
-            // 
-            // lvDocs
-            // 
+
+            lblImportPerSeriesDocs.AutoSize = true;
+            lblImportPerSeriesDocs.Location = new Point(24, 24);
+            lblImportPerSeriesDocs.Name = "lblImportPerSeriesDocs";
+            lblImportPerSeriesDocs.Size = new Size(283, 15);
+            lblImportPerSeriesDocs.TabIndex = 0;
+            lblImportPerSeriesDocs.Text = "Documents can be imported per series configuration.";
+
+            btnImportCsv.Location = new Point(24, 54);
+            btnImportCsv.Name = "btnImportCsv";
+            btnImportCsv.Size = new Size(135, 27);
+            btnImportCsv.TabIndex = 1;
+            btnImportCsv.Text = "Import CSV";
+            btnImportCsv.UseVisualStyleBackColor = true;
+            btnImportCsv.Click += btnImportCsv_Click;
+
             lvDocs.Columns.AddRange(new ColumnHeader[] { colDocCode, colDocFile, colDocBy, colDocAt });
             lvDocs.FullRowSelect = true;
             lvDocs.GridLines = true;
-            lvDocs.Location = new Point(24, 58);
+            lvDocs.HideSelection = false;
+            lvDocs.Location = new Point(24, 90);
             lvDocs.Name = "lvDocs";
-            lvDocs.Size = new Size(727, 351);
-            lvDocs.TabIndex = 1;
+            lvDocs.Size = new Size(728, 319);
+            lvDocs.TabIndex = 2;
             lvDocs.UseCompatibleStateImageBehavior = false;
             lvDocs.View = View.Details;
-            lvDocs.DoubleClick += lvDocs_DoubleClick;
-            colDocCode.Text = "Code";
-            colDocCode.Width = 200;
-            colDocFile.Text = "File";
-            colDocFile.Width = 250;
-            colDocBy.Text = "By";
-            colDocBy.Width = 80;
-            colDocAt.Text = "At";
-            colDocAt.Width = 160;
-            // 
+
+            colDocCode.Text = "Doc Code";
+            colDocCode.Width = 120;
+
+            colDocFile.Text = "File Name";
+            colDocFile.Width = 300;
+
+            colDocBy.Text = "Created By";
+            colDocBy.Width = 120;
+
+            colDocAt.Text = "Created At";
+            colDocAt.Width = 120;
+
+            btnDocsRefresh.Location = new Point(24, 385);
+            btnDocsRefresh.Name = "btnDocsRefresh";
+            btnDocsRefresh.Size = new Size(135, 27);
+            btnDocsRefresh.TabIndex = 6;
+            btnDocsRefresh.Text = "Refresh";
+            btnDocsRefresh.UseVisualStyleBackColor = true;
+            btnDocsRefresh.Click += btnDocsRefresh_Click;
+
             // Form1
-            // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(784, 461);
             Controls.Add(tabControl1);
             Name = "Form1";
-            Text = "DocControl";
+            Text = "Document Control Panel";
+
             tabControl1.ResumeLayout(false);
             tabGenerate.ResumeLayout(false);
             tabGenerate.PerformLayout();
@@ -903,10 +762,11 @@ namespace DocControl
             tabRecommend.PerformLayout();
             tabSettings.ResumeLayout(false);
             tabSettings.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)numPadding).EndInit();
+            ((ISupportInitialize)numPadding).EndInit();
             tabAudit.ResumeLayout(false);
             tabAudit.PerformLayout();
             tabDocs.ResumeLayout(false);
+            tabDocs.PerformLayout();
             ResumeLayout(false);
         }
 
@@ -917,13 +777,16 @@ namespace DocControl
         private TabPage tabImport;
         private TabPage tabRecommend;
         private TabPage tabSettings;
+        private TabPage tabAudit;
+        private TabPage tabDocs;
+
         private Label label2;
         private ComboBox cmbLevel1;
-        private ComboBox cmbLevel3;
-        private Label label4;
         private ComboBox cmbLevel2;
-        private Label label3;
+        private ComboBox cmbLevel3;
         private ComboBox cmbLevel4;
+        private Label label3;
+        private Label label4;
         private Label label5;
         private CheckBox chkEnableLevel4;
         private TextBox txtFreeText;
@@ -932,72 +795,69 @@ namespace DocControl
         private TextBox txtExtension;
         private Label label7;
         private Label lblGenerateResult;
-        private Button btnBrowseImport;
-        private TextBox txtImportFolder;
-        private Label label8;
+        private Label lblNoDelete;
+
         private Label lblImportResult;
-        private Button btnImport;
-        private TextBox txtNlq;
-        private Label label9;
+        private ListBox lstImportInvalid;
+        private ListView lvImportSummary;
+        private ColumnHeader colSeries;
+        private ColumnHeader colMaxNum;
+        private ColumnHeader colNextNum;
+        private Label lblImportNote;
+        private CheckBox chkSeedCounters;
+        private Button btnSeedSelected;
+        private Label lblImportPerSeries;
+
         private TextBox txtNlqResult;
         private Button btnInterpret;
         private Button btnRecommend;
         private Label lblRecommendResult;
-        private TextBox txtSeparator;
-        private Label label1;
-        private NumericUpDown numPadding;
-        private Label label10;
-        private ComboBox cmbProvider;
-        private Label label11;
-        private TextBox txtGeminiModel;
-        private Label label13;
-        private TextBox txtOpenAiModel;
-        private Label label12;
+        private TextBox txtNlq;
+        private Label label9;
+        private Button btnUseSuggested;
+        private Button btnCreateRecommended;
+        private Label lblRecommendInfo;
+
         private Button btnSaveSettings;
         private TextBox txtGeminiKey;
         private Label label15;
         private TextBox txtOpenAiKey;
         private Label label14;
+        private TextBox txtGeminiModel;
+        private Label label13;
+        private TextBox txtOpenAiModel;
+        private Label label12;
+        private ComboBox cmbProvider;
+        private Label label11;
+        private NumericUpDown numPadding;
+        private Label label10;
+        private TextBox txtSeparator;
+        private Label label1;
         private CheckBox chkSettingsEnableLevel4;
-        private TabPage tabAudit;
+
         private Button btnAuditRefresh;
         private ListView lvAudit;
-        private ColumnHeader colAction;
-        private ColumnHeader colBy;
         private ColumnHeader colAt;
+        private ColumnHeader colBy;
+        private ColumnHeader colAction;
         private ColumnHeader colPayload;
         private ColumnHeader colDocId;
-        private ListBox lstImportInvalid;
-        private Button btnImportCsv;
-        private Button btnBrowseCsv;
-        private TextBox txtImportCsv;
-        private Label label16;
-        private ListView lvImportSummary;
-        private ColumnHeader colSeries;
-        private ColumnHeader colMaxNum;
-        private ColumnHeader colNextNum;
-        private Button btnUseSuggested;
         private Button btnAuditFilter;
         private TextBox txtAuditAction;
         private TextBox txtAuditUser;
         private Label labelAuditAction;
         private Label labelAuditUser;
-        private CheckBox chkSeedCounters;
         private Button btnAuditPrev;
         private Button btnAuditNext;
         private Label lblAuditPage;
-        private Button btnCreateRecommended;
-        private Label lblNoDelete;
-        private Label lblImportNote;
-        private Button btnSeedSelected;
-        private TabPage tabDocs;
+
         private Button btnDocsRefresh;
         private ListView lvDocs;
         private ColumnHeader colDocCode;
         private ColumnHeader colDocFile;
         private ColumnHeader colDocBy;
         private ColumnHeader colDocAt;
-        private Label lblRecommendInfo;
-        private Label lblImportPerSeries;
+        private Label lblImportPerSeriesDocs;
+        private Button btnImportCsv;
     }
 }

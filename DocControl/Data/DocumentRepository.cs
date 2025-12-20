@@ -45,7 +45,7 @@ public sealed class DocumentRepository
         await conn.OpenAsync(cancellationToken).ConfigureAwait(false);
 
         var cmd = conn.CreateCommand();
-        cmd.CommandText = @"SELECT MAX(Number) FROM Documents WHERE Level1 = $l1 AND Level2 = $l2 AND Level3 = $l3 AND (Level4 IS $l4OrNull OR Level4 = $l4OrNull);";
+        cmd.CommandText = @"SELECT MAX(Number) FROM Documents WHERE Level1 = $l1 AND Level2 = $l2 AND Level3 = $l3 AND Level4 IS $l4OrNull;";
         cmd.Parameters.AddWithValue("$l1", key.Level1);
         cmd.Parameters.AddWithValue("$l2", key.Level2);
         cmd.Parameters.AddWithValue("$l3", key.Level3);
@@ -60,7 +60,7 @@ public sealed class DocumentRepository
         await using var conn = factory.Create();
         await conn.OpenAsync(cancellationToken).ConfigureAwait(false);
         var cmd = conn.CreateCommand();
-        cmd.CommandText = @"SELECT 1 FROM Documents WHERE Level1=$l1 AND Level2=$l2 AND Level3=$l3 AND (Level4 IS $l4OrNull OR Level4 = $l4OrNull) LIMIT 1;";
+        cmd.CommandText = @"SELECT 1 FROM Documents WHERE Level1=$l1 AND Level2=$l2 AND Level3=$l3 AND Level4 IS $l4OrNull LIMIT 1;";
         cmd.Parameters.AddWithValue("$l1", key.Level1);
         cmd.Parameters.AddWithValue("$l2", key.Level2);
         cmd.Parameters.AddWithValue("$l3", key.Level3);
@@ -141,5 +141,46 @@ public sealed class DocumentRepository
         await delDocs.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
 
         await tx.CommitAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task UpsertImportedAsync(CodeSeriesKey key, int number, string fileName, string createdBy, DateTime createdAtUtc, CancellationToken cancellationToken = default)
+    {
+        await using var conn = factory.Create();
+        await conn.OpenAsync(cancellationToken).ConfigureAwait(false);
+
+        var cmd = conn.CreateCommand();
+        cmd.CommandText = @"
+            INSERT INTO Documents (Level1, Level2, Level3, Level4, Number, FreeText, FileName, CreatedBy, CreatedAt, OriginalQuery, CodeSeriesId)
+            VALUES (
+                $l1,
+                $l2,
+                $l3,
+                $l4,
+                $num,
+                NULL,
+                $file,
+                $by,
+                $at,
+                NULL,
+                (SELECT Id FROM CodeSeries WHERE Level1 = $l1 AND Level2 = $l2 AND Level3 = $l3 AND Level4 IS $l4OrNull LIMIT 1)
+            )
+            ON CONFLICT(Level1, Level2, Level3, Level4, Number)
+            DO UPDATE SET
+                FileName = excluded.FileName,
+                CreatedBy = excluded.CreatedBy,
+                CreatedAt = excluded.CreatedAt;
+        ";
+
+        cmd.Parameters.AddWithValue("$l1", key.Level1);
+        cmd.Parameters.AddWithValue("$l2", key.Level2);
+        cmd.Parameters.AddWithValue("$l3", key.Level3);
+        cmd.Parameters.AddWithValue("$l4", (object?)key.Level4 ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("$l4OrNull", (object?)key.Level4 ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("$num", number);
+        cmd.Parameters.AddWithValue("$file", fileName);
+        cmd.Parameters.AddWithValue("$by", createdBy);
+        cmd.Parameters.AddWithValue("$at", createdAtUtc.ToString("O"));
+
+        await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
     }
 }

@@ -28,11 +28,14 @@ public sealed class CodeGenerator
     {
         var baseCode = BuildCode(key, number);
         var sb = new StringBuilder(baseCode);
-        if (!string.IsNullOrWhiteSpace(freeText))
+
+        var trimmedFree = freeText?.Trim();
+        if (!string.IsNullOrWhiteSpace(trimmedFree))
         {
-            sb.Append(config.Separator);
-            sb.Append(freeText.Trim());
+            sb.Append(' ');
+            sb.Append(trimmedFree);
         }
+
         if (!string.IsNullOrWhiteSpace(extension))
         {
             var sanitized = extension.StartsWith('.') ? extension : $".{extension}";

@@ -23,6 +23,7 @@ namespace DocControl
         private readonly DocumentRepository? documentRepository;
         private readonly CodeImportService? codeImportService;
         private readonly CodeSeriesRepository? codeSeriesRepository;
+        private readonly DocumentImportService? documentImportService;
         private int? lastSuggested;
         private CodeSeriesKey? lastSuggestedKey;
         private int auditPage = 1;
@@ -34,7 +35,7 @@ namespace DocControl
             InitializeComponent();
         }
 
-        public Form1(DocumentService documentService, ImportService importService, NlqService nlqService, ConfigService configService, DocumentConfig documentConfig, AiSettings aiSettings, AiClientOptions aiOptions, AuditRepository auditRepository, RecommendationService recommendationService, DocumentRepository documentRepository, CodeImportService codeImportService, CodeSeriesRepository codeSeriesRepository)
+        public Form1(DocumentService documentService, ImportService importService, NlqService nlqService, ConfigService configService, DocumentConfig documentConfig, AiSettings aiSettings, AiClientOptions aiOptions, AuditRepository auditRepository, RecommendationService recommendationService, DocumentRepository documentRepository, CodeImportService codeImportService, CodeSeriesRepository codeSeriesRepository, DocumentImportService documentImportService)
             : this()
         {
             this.documentService = documentService;
@@ -49,6 +50,7 @@ namespace DocControl
             this.documentRepository = documentRepository;
             this.codeImportService = codeImportService;
             this.codeSeriesRepository = codeSeriesRepository;
+            this.documentImportService = documentImportService;
 
             LoadSettingsToUi();
             AddCodeImportButton();
@@ -77,7 +79,7 @@ namespace DocControl
 
             var codes = await codeSeriesRepository.GetLevel1CodesAsync();
             cmbLevel1.Items.Clear();
-            cmbLevel1.Items.Add(""); // Add empty option for manual entry
+            cmbLevel1.Items.Add("");
             foreach (var code in codes)
             {
                 cmbLevel1.Items.Add(code);
@@ -88,28 +90,22 @@ namespace DocControl
         {
             if (codeSeriesRepository is null) return;
 
-            var selectedLevel1 = string.IsNullOrWhiteSpace(cmbLevel1.Text) ? null : cmbLevel1.Text.Trim();
-            
-            // Always repopulate Level2 with all available Level2 codes
-            // Since we store codes separately, not hierarchically
             var level2Codes = await codeSeriesRepository.GetLevel2CodesAsync(null);
             cmbLevel2.Items.Clear();
-            cmbLevel2.Items.Add(""); // Add empty option
+            cmbLevel2.Items.Add("");
             foreach (var code in level2Codes)
             {
                 cmbLevel2.Items.Add(code);
             }
 
-            // Always repopulate Level3 with all available Level3 codes
             var level3Codes = await codeSeriesRepository.GetLevel3CodesAsync(null, null);
             cmbLevel3.Items.Clear();
-            cmbLevel3.Items.Add(""); // Add empty option
+            cmbLevel3.Items.Add("");
             foreach (var code in level3Codes)
             {
                 cmbLevel3.Items.Add(code);
             }
 
-            // Clear Level4
             cmbLevel4.Items.Clear();
             cmbLevel4.Items.Add("");
         }
@@ -118,17 +114,14 @@ namespace DocControl
         {
             if (codeSeriesRepository is null) return;
 
-            // Always repopulate Level3 with all available Level3 codes
-            // Since we store codes separately, not hierarchically
             var level3Codes = await codeSeriesRepository.GetLevel3CodesAsync(null, null);
             cmbLevel3.Items.Clear();
-            cmbLevel3.Items.Add(""); // Add empty option
+            cmbLevel3.Items.Add("");
             foreach (var code in level3Codes)
             {
                 cmbLevel3.Items.Add(code);
             }
 
-            // Clear Level4
             cmbLevel4.Items.Clear();
             cmbLevel4.Items.Add("");
         }
@@ -137,11 +130,9 @@ namespace DocControl
         {
             if (codeSeriesRepository is null || !chkEnableLevel4.Checked) return;
 
-            // Always repopulate Level4 with all available Level4 codes
-            // Since we store codes separately, not hierarchically
             var level4Codes = await codeSeriesRepository.GetLevel4CodesAsync(null, null, null);
             cmbLevel4.Items.Clear();
-            cmbLevel4.Items.Add(""); // Add empty option
+            cmbLevel4.Items.Add("");
             foreach (var code in level4Codes)
             {
                 cmbLevel4.Items.Add(code);
@@ -150,66 +141,54 @@ namespace DocControl
 
         private async void cmbLevel1_TextChanged(object sender, EventArgs e)
         {
-            // Debounce to avoid too many database calls
             await Task.Delay(300);
             if (codeSeriesRepository is null) return;
 
-            // Always repopulate Level2 with all available Level2 codes
-            // Since we store codes separately, not hierarchically
             var level2Codes = await codeSeriesRepository.GetLevel2CodesAsync(null);
             cmbLevel2.Items.Clear();
-            cmbLevel2.Items.Add(""); // Add empty option
+            cmbLevel2.Items.Add("");
             foreach (var code in level2Codes)
             {
                 cmbLevel2.Items.Add(code);
             }
 
-            // Always repopulate Level3 with all available Level3 codes
             var level3Codes = await codeSeriesRepository.GetLevel3CodesAsync(null, null);
             cmbLevel3.Items.Clear();
-            cmbLevel3.Items.Add(""); // Add empty option
+            cmbLevel3.Items.Add("");
             foreach (var code in level3Codes)
             {
                 cmbLevel3.Items.Add(code);
             }
 
-            // Clear Level4
             cmbLevel4.Items.Clear();
             cmbLevel4.Items.Add("");
         }
 
         private async void cmbLevel2_TextChanged(object sender, EventArgs e)
         {
-            // Debounce to avoid too many database calls
             await Task.Delay(300);
             if (codeSeriesRepository is null) return;
 
-            // Always repopulate Level3 with all available Level3 codes
-            // Since we store codes separately, not hierarchically
             var level3Codes = await codeSeriesRepository.GetLevel3CodesAsync(null, null);
             cmbLevel3.Items.Clear();
-            cmbLevel3.Items.Add(""); // Add empty option
+            cmbLevel3.Items.Add("");
             foreach (var code in level3Codes)
             {
                 cmbLevel3.Items.Add(code);
             }
 
-            // Clear Level4
             cmbLevel4.Items.Clear();
             cmbLevel4.Items.Add("");
         }
 
         private async void cmbLevel3_TextChanged(object sender, EventArgs e)
         {
-            // Debounce to avoid too many database calls
             await Task.Delay(300);
             if (codeSeriesRepository is null || !chkEnableLevel4.Checked) return;
 
-            // Always repopulate Level4 with all available Level4 codes
-            // Since we store codes separately, not hierarchically
             var level4Codes = await codeSeriesRepository.GetLevel4CodesAsync(null, null, null);
             cmbLevel4.Items.Clear();
-            cmbLevel4.Items.Add(""); // Add empty option
+            cmbLevel4.Items.Add("");
             foreach (var code in level4Codes)
             {
                 cmbLevel4.Items.Add(code);
@@ -218,7 +197,6 @@ namespace DocControl
 
         private void AddCodeImportButton()
         {
-            // Add a new button for code import next to the existing CSV import button
             var btnImportCodes = new Button
             {
                 Text = "Import Codes",
@@ -261,7 +239,6 @@ namespace DocControl
             {
                 await documentRepository.ClearAllAsync();
 
-                // Refresh UI lists if user has those tabs open later
                 lvDocs.Items.Clear();
                 lvAudit.Items.Clear();
                 lblImportResult.Text = string.Empty;
@@ -290,7 +267,6 @@ namespace DocControl
             {
                 MessageBox.Show("Codes imported successfully. You can now use them in document generation.", "Import Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 
-                // Refresh ALL combo boxes with new data
                 await PopulateLevel1CodesAsync();
                 await PopulateLevel2CodesAsync();
                 await PopulateLevel3CodesAsync();
@@ -303,7 +279,7 @@ namespace DocControl
 
             var codes = await codeSeriesRepository.GetLevel2CodesAsync(null);
             cmbLevel2.Items.Clear();
-            cmbLevel2.Items.Add(""); // Add empty option
+            cmbLevel2.Items.Add("");
             foreach (var code in codes)
             {
                 cmbLevel2.Items.Add(code);
@@ -316,7 +292,7 @@ namespace DocControl
 
             var codes = await codeSeriesRepository.GetLevel3CodesAsync(null, null);
             cmbLevel3.Items.Clear();
-            cmbLevel3.Items.Add(""); // Add empty option
+            cmbLevel3.Items.Add("");
             foreach (var code in codes)
             {
                 cmbLevel3.Items.Add(code);
@@ -401,28 +377,127 @@ namespace DocControl
             }
         }
 
-        private async void btnImport_Click(object sender, EventArgs e)
-        {
-            if (importService is null) { MessageBox.Show("Service unavailable"); return; }
-            var folder = txtImportFolder.Text.Trim();
-            if (!Directory.Exists(folder)) { MessageBox.Show("Folder not found"); return; }
-            var files = Directory.GetFiles(folder);
-            var seeded = chkSeedCounters.Checked;
-            var result = await importService.ImportFilesAsync(files, seeded);
-            PopulateImportResults(result);
-            lblImportNote.Text = seeded ? "Counters seeded from imported max values." : "Preview only (counters not seeded).";
-        }
-
+        // Documents tab: import lines like "DFT-GOV-REG-001 DocControl"
         private async void btnImportCsv_Click(object sender, EventArgs e)
         {
-            if (importService is null) { MessageBox.Show("Service unavailable"); return; }
-            var path = txtImportCsv.Text.Trim();
-            if (!File.Exists(path)) { MessageBox.Show("CSV file not found"); return; }
-            var lines = await File.ReadAllLinesAsync(path);
-            var seeded = chkSeedCounters.Checked;
-            var result = await importService.ImportFileNamesAsync(lines, seeded);
-            PopulateImportResults(result);
-            lblImportNote.Text = seeded ? "Counters seeded from imported max values." : "Preview only (counters not seeded).";
+            if (documentRepository is null || codeSeriesRepository is null || documentImportService is null || documentConfig is null)
+            {
+                MessageBox.Show("Service unavailable");
+                return;
+            }
+
+            using var dlg = new OpenFileDialog
+            {
+                Filter = "CSV files|*.csv|Text files|*.txt|All files|*.*",
+                Title = "Select CSV file (code + name)"
+            };
+
+            if (dlg.ShowDialog() != DialogResult.OK) return;
+
+            var lines = await File.ReadAllLinesAsync(dlg.FileName);
+            var entries = documentImportService.ParseCodeAndFileLines(lines);
+
+            if (entries.Count == 0)
+            {
+                MessageBox.Show("No rows found.");
+                return;
+            }
+
+            var valid = 0;
+            var invalid = 0;
+            var errors = new List<string>();
+            var toSeed = new List<(CodeSeriesKey key, int maxNumber)>();
+            var toImport = new List<(CodeSeriesKey key, int number, string fileName)>();
+
+            foreach (var entry in entries)
+            {
+                if (!TryParseCodeOnly(entry.Code, out var key, out var number, out var reason))
+                {
+                    invalid++;
+                    errors.Add($"{entry.Code}: {reason}");
+                    continue;
+                }
+
+                valid++;
+                toSeed.Add((key, number));
+
+                var fileName = string.IsNullOrWhiteSpace(entry.FileName) ? entry.Code : entry.FileName;
+                toImport.Add((key, number, fileName));
+            }
+
+            if (toSeed.Count > 0)
+            {
+                await codeSeriesRepository.SeedNextNumbersAsync(toSeed);
+            }
+
+            foreach (var (key, number, fileName) in toImport)
+            {
+                await documentRepository.UpsertImportedAsync(key, number, fileName, Environment.UserName, DateTime.UtcNow);
+            }
+
+            await LoadDocsAsync();
+
+            var msg = $"Imported {valid} rows. Invalid: {invalid}.";
+            if (errors.Count > 0)
+            {
+                msg += "\n\nFirst errors:\n" + string.Join("\n", errors.Take(10));
+                if (errors.Count > 10) msg += $"\n...and {errors.Count - 10} more.";
+            }
+
+            MessageBox.Show(msg);
+        }
+
+        private bool TryParseCodeOnly(string code, out CodeSeriesKey key, out int number, out string reason)
+        {
+            key = new CodeSeriesKey { Level1 = "", Level2 = "", Level3 = "", Level4 = null };
+            number = 0;
+            reason = string.Empty;
+
+            if (documentConfig is null)
+            {
+                reason = "No configuration";
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(code))
+            {
+                reason = "Empty code";
+                return false;
+            }
+
+            var parts = code.Trim().Split(documentConfig.Separator, StringSplitOptions.RemoveEmptyEntries);
+            if (documentConfig.EnableLevel4)
+            {
+                if (parts.Length != 5)
+                {
+                    reason = "Expected Level1-4 and number";
+                    return false;
+                }
+
+                if (!int.TryParse(parts[4], out number))
+                {
+                    reason = "Number not numeric";
+                    return false;
+                }
+
+                key = new CodeSeriesKey { Level1 = parts[0], Level2 = parts[1], Level3 = parts[2], Level4 = parts[3] };
+                return true;
+            }
+
+            if (parts.Length != 4)
+            {
+                reason = "Expected Level1-3 and number";
+                return false;
+            }
+
+            if (!int.TryParse(parts[3], out number))
+            {
+                reason = "Number not numeric";
+                return false;
+            }
+
+            key = new CodeSeriesKey { Level1 = parts[0], Level2 = parts[1], Level3 = parts[2], Level4 = null };
+            return true;
         }
 
         private async void btnInterpret_Click(object sender, EventArgs e)
@@ -520,7 +595,6 @@ namespace DocControl
             aiSettings.OpenAiModel = txtOpenAiModel.Text.Trim();
             aiSettings.GeminiModel = txtGeminiModel.Text.Trim();
 
-            // rebuild options (refresh keys/models)
             var refreshed = await configService.BuildAiOptionsAsync(aiSettings);
             aiOptions.DefaultProvider = refreshed.DefaultProvider;
             aiOptions.OpenAi.ApiKey = refreshed.OpenAi.ApiKey;
@@ -611,27 +685,7 @@ namespace DocControl
 
         private void chkSettingsEnableLevel4_CheckedChanged(object sender, EventArgs e)
         {
-            // Mirror setting to generate tab
             chkEnableLevel4.Checked = chkSettingsEnableLevel4.Checked;
-        }
-
-        private void btnBrowseImport_Click(object sender, EventArgs e)
-        {
-            using var dlg = new FolderBrowserDialog();
-            if (dlg.ShowDialog() == DialogResult.OK)
-            {
-                txtImportFolder.Text = dlg.SelectedPath;
-            }
-        }
-
-        private void btnBrowseCsv_Click(object sender, EventArgs e)
-        {
-            using var dlg = new OpenFileDialog();
-            dlg.Filter = "CSV files|*.csv|All files|*.*";
-            if (dlg.ShowDialog() == DialogResult.OK)
-            {
-                txtImportCsv.Text = dlg.FileName;
-            }
         }
 
         private async void lvAudit_DoubleClick(object sender, EventArgs e)
@@ -677,7 +731,19 @@ namespace DocControl
             var docs = await documentRepository.GetRecentAsync();
             foreach (var doc in docs)
             {
-                var code = string.Join(documentConfig?.Separator ?? "-", new[] { doc.Level1, doc.Level2, doc.Level3 }.Concat(string.IsNullOrWhiteSpace(doc.Level4) ? Array.Empty<string>() : new[] { doc.Level4 }).Concat(new[] { doc.Number.ToString() }));
+                var sep = documentConfig?.Separator ?? "-";
+                var pad = documentConfig?.PaddingLength ?? 3;
+                var num = doc.Number.ToString().PadLeft(pad, '0');
+
+                var parts = new List<string> { doc.Level1, doc.Level2, doc.Level3 };
+                if (documentConfig?.EnableLevel4 == true && !string.IsNullOrWhiteSpace(doc.Level4))
+                {
+                    parts.Add(doc.Level4);
+                }
+                parts.Add(num);
+
+                var code = string.Join(sep, parts);
+
                 var item = new ListViewItem(code) { Tag = doc };
                 item.SubItems.Add(doc.FileName);
                 item.SubItems.Add(doc.CreatedBy);
