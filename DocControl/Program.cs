@@ -52,8 +52,21 @@ namespace DocControl
             services.AddSingleton<ImportService>();
             services.AddSingleton<RecommendationService>();
             services.AddSingleton<NlqService>();
+            services.AddSingleton<CodeImportService>();
 
-            services.AddSingleton<Form1>();
+            services.AddSingleton<Form1>(provider => new Form1(
+                provider.GetRequiredService<DocumentService>(),
+                provider.GetRequiredService<ImportService>(),
+                provider.GetRequiredService<NlqService>(),
+                provider.GetRequiredService<ConfigService>(),
+                provider.GetRequiredService<DocumentConfig>(),
+                provider.GetRequiredService<AiSettings>(),
+                provider.GetRequiredService<AiClientOptions>(),
+                provider.GetRequiredService<AuditRepository>(),
+                provider.GetRequiredService<RecommendationService>(),
+                provider.GetRequiredService<DocumentRepository>(),
+                provider.GetRequiredService<CodeImportService>()
+            ));
 
             using var provider = services.BuildServiceProvider();
 

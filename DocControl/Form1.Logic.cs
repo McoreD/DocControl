@@ -3,6 +3,7 @@ using System.Text.RegularExpressions;
 using DocControl.AI;
 using DocControl.Configuration;
 using DocControl.Data;
+using DocControl.Forms;
 using DocControl.Models;
 using DocControl.Services;
 
@@ -20,6 +21,7 @@ namespace DocControl
         private readonly AuditRepository? auditRepository;
         private readonly RecommendationService? recommendationService;
         private readonly DocumentRepository? documentRepository;
+        private readonly CodeImportService? codeImportService;
         private int? lastSuggested;
         private CodeSeriesKey? lastSuggestedKey;
         private int auditPage = 1;
@@ -31,7 +33,7 @@ namespace DocControl
             InitializeComponent();
         }
 
-        public Form1(DocumentService documentService, ImportService importService, NlqService nlqService, ConfigService configService, DocumentConfig documentConfig, AiSettings aiSettings, AiClientOptions aiOptions, AuditRepository auditRepository, RecommendationService recommendationService, DocumentRepository documentRepository)
+        public Form1(DocumentService documentService, ImportService importService, NlqService nlqService, ConfigService configService, DocumentConfig documentConfig, AiSettings aiSettings, AiClientOptions aiOptions, AuditRepository auditRepository, RecommendationService recommendationService, DocumentRepository documentRepository, CodeImportService codeImportService)
             : this()
         {
             this.documentService = documentService;
@@ -44,8 +46,40 @@ namespace DocControl
             this.auditRepository = auditRepository;
             this.recommendationService = recommendationService;
             this.documentRepository = documentRepository;
+            this.codeImportService = codeImportService;
 
             LoadSettingsToUi();
+            AddCodeImportButton();
+        }
+
+        private void AddCodeImportButton()
+        {
+            // Add a new button for code import next to the existing CSV import button
+            var btnImportCodes = new Button
+            {
+                Text = "Import Codes",
+                Size = new Size(135, 27),
+                Location = new Point(180, 99),
+                UseVisualStyleBackColor = true
+            };
+            btnImportCodes.Click += BtnImportCodes_Click;
+            
+            tabImport.Controls.Add(btnImportCodes);
+        }
+
+        private void BtnImportCodes_Click(object? sender, EventArgs e)
+        {
+            if (codeImportService is null)
+            {
+                MessageBox.Show("Code import service unavailable");
+                return;
+            }
+
+            using var importForm = new CodeImportForm(codeImportService);
+            if (importForm.ShowDialog(this) == DialogResult.OK)
+            {
+                MessageBox.Show("Codes imported successfully. You can now use them in document generation.", "Import Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
         }
 
         private static bool IsAlphanumeric(string value) => Regex.IsMatch(value, "^[A-Za-z0-9_-]+$");
