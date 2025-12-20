@@ -764,5 +764,83 @@ namespace DocControl
             var level4 = string.IsNullOrWhiteSpace(doc.Level4) ? string.Empty : $"{documentConfig?.Separator}{doc.Level4}";
             MessageBox.Show($"DocId: {doc.Id}\nCode: {doc.Level1}{documentConfig?.Separator}{doc.Level2}{documentConfig?.Separator}{doc.Level3}{level4}{documentConfig?.Separator}{doc.Number}\nFile: {doc.FileName}\nBy: {doc.CreatedBy}\nAt: {doc.CreatedAtUtc.ToLocalTime():g}");
         }
+
+        private async void btnCodesImportCsv_Click(object sender, EventArgs e)
+        {
+            if (codeImportService is null)
+            {
+                MessageBox.Show("Code import service unavailable");
+                return;
+            }
+
+            using var importForm = new CodeImportForm(codeImportService);
+            if (importForm.ShowDialog(this) == DialogResult.OK)
+            {
+                await LoadCodesDisplayAsync();
+                MessageBox.Show("Codes imported successfully.", "Import Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                
+                await PopulateLevel1CodesAsync();
+                await PopulateLevel2CodesAsync();
+                await PopulateLevel3CodesAsync();
+            }
+        }
+
+        private async void btnCodesRefresh_Click(object sender, EventArgs e)
+        {
+            await LoadCodesDisplayAsync();
+        }
+
+        private async Task LoadCodesDisplayAsync()
+        {
+            if (codeSeriesRepository is null) return;
+
+            lvCodes.Items.Clear();
+
+            try
+            {
+                var level1Codes = await codeSeriesRepository.GetLevel1CodesAsync();
+                foreach (var code in level1Codes)
+                {
+                    var item = new ListViewItem("1");
+                    item.SubItems.Add(code);
+                    item.SubItems.Add("Level 1 Code");
+                    lvCodes.Items.Add(item);
+                }
+
+                var level2Codes = await codeSeriesRepository.GetLevel2CodesAsync();
+                foreach (var code in level2Codes)
+                {
+                    var item = new ListViewItem("2");
+                    item.SubItems.Add(code);
+                    item.SubItems.Add("Level 2 Code");
+                    lvCodes.Items.Add(item);
+                }
+
+                var level3Codes = await codeSeriesRepository.GetLevel3CodesAsync();
+                foreach (var code in level3Codes)
+                {
+                    var item = new ListViewItem("3");
+                    item.SubItems.Add(code);
+                    item.SubItems.Add("Level 3 Code");
+                    lvCodes.Items.Add(item);
+                }
+
+                if (documentConfig?.EnableLevel4 == true)
+                {
+                    var level4Codes = await codeSeriesRepository.GetLevel4CodesAsync();
+                    foreach (var code in level4Codes)
+                    {
+                        var item = new ListViewItem("4");
+                        item.SubItems.Add(code);
+                        item.SubItems.Add("Level 4 Code");
+                        lvCodes.Items.Add(item);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to load codes: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
     }
 }

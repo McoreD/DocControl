@@ -41,6 +41,15 @@ namespace DocControl
             cmbLevel1 = new ComboBox();
             label2 = new Label();
 
+            tabCodes = new TabPage();
+            btnCodesImportCsv = new Button();
+            btnCodesRefresh = new Button();
+            lvCodes = new ListView();
+            colCodeLevel = new ColumnHeader();
+            colCodeValue = new ColumnHeader();
+            colCodeDescription = new ColumnHeader();
+            lblCodesInfo = new Label();
+
             tabImport = new TabPage();
             lblImportPerSeries = new Label();
             lblImportResult = new Label();
@@ -111,6 +120,7 @@ namespace DocControl
 
             tabControl1.SuspendLayout();
             tabGenerate.SuspendLayout();
+            tabCodes.SuspendLayout();
             tabImport.SuspendLayout();
             tabRecommend.SuspendLayout();
             tabSettings.SuspendLayout();
@@ -121,6 +131,7 @@ namespace DocControl
 
             // tabControl1
             tabControl1.Controls.Add(tabGenerate);
+            tabControl1.Controls.Add(tabCodes);
             tabControl1.Controls.Add(tabImport);
             tabControl1.Controls.Add(tabRecommend);
             tabControl1.Controls.Add(tabSettings);
@@ -289,6 +300,62 @@ namespace DocControl
             lblNoDelete.Size = new Size(0, 15);
             lblNoDelete.TabIndex = 15;
 
+            // tabCodes
+            tabCodes.Controls.Add(btnCodesRefresh);
+            tabCodes.Controls.Add(btnCodesImportCsv);
+            tabCodes.Controls.Add(lvCodes);
+            tabCodes.Controls.Add(lblCodesInfo);
+            tabCodes.Location = new Point(4, 24);
+            tabCodes.Name = "tabCodes";
+            tabCodes.Padding = new Padding(3);
+            tabCodes.Size = new Size(776, 433);
+            tabCodes.TabIndex = 6;
+            tabCodes.Text = "Codes";
+            tabCodes.UseVisualStyleBackColor = true;
+
+            lblCodesInfo.AutoSize = true;
+            lblCodesInfo.Location = new Point(24, 24);
+            lblCodesInfo.Name = "lblCodesInfo";
+            lblCodesInfo.Size = new Size(400, 15);
+            lblCodesInfo.TabIndex = 0;
+            lblCodesInfo.Text = "Import and manage code series (Level1, Level2, Level3, Level4).";
+
+            btnCodesImportCsv.Location = new Point(24, 54);
+            btnCodesImportCsv.Name = "btnCodesImportCsv";
+            btnCodesImportCsv.Size = new Size(135, 27);
+            btnCodesImportCsv.TabIndex = 1;
+            btnCodesImportCsv.Text = "Import CSV";
+            btnCodesImportCsv.UseVisualStyleBackColor = true;
+            btnCodesImportCsv.Click += btnCodesImportCsv_Click;
+
+            btnCodesRefresh.Location = new Point(165, 54);
+            btnCodesRefresh.Name = "btnCodesRefresh";
+            btnCodesRefresh.Size = new Size(135, 27);
+            btnCodesRefresh.TabIndex = 2;
+            btnCodesRefresh.Text = "Refresh";
+            btnCodesRefresh.UseVisualStyleBackColor = true;
+            btnCodesRefresh.Click += btnCodesRefresh_Click;
+
+            lvCodes.Columns.AddRange(new ColumnHeader[] { colCodeLevel, colCodeValue, colCodeDescription });
+            lvCodes.FullRowSelect = true;
+            lvCodes.GridLines = true;
+            lvCodes.HideSelection = false;
+            lvCodes.Location = new Point(24, 90);
+            lvCodes.Name = "lvCodes";
+            lvCodes.Size = new Size(728, 319);
+            lvCodes.TabIndex = 3;
+            lvCodes.UseCompatibleStateImageBehavior = false;
+            lvCodes.View = View.Details;
+
+            colCodeLevel.Text = "Level";
+            colCodeLevel.Width = 80;
+
+            colCodeValue.Text = "Code";
+            colCodeValue.Width = 150;
+
+            colCodeDescription.Text = "Description";
+            colCodeDescription.Width = 450;
+
             // tabImport
             tabImport.Controls.Add(lblImportPerSeries);
             tabImport.Controls.Add(lvImportSummary);
@@ -301,7 +368,7 @@ namespace DocControl
             tabImport.Name = "tabImport";
             tabImport.Padding = new Padding(3);
             tabImport.Size = new Size(776, 433);
-            tabImport.TabIndex = 1;
+            tabImport.TabIndex = 2;
             tabImport.Text = "Import";
             tabImport.UseVisualStyleBackColor = true;
 
@@ -386,7 +453,7 @@ namespace DocControl
             tabRecommend.Location = new Point(4, 24);
             tabRecommend.Name = "tabRecommend";
             tabRecommend.Size = new Size(776, 433);
-            tabRecommend.TabIndex = 2;
+            tabRecommend.TabIndex = 3;
             tabRecommend.Text = "Recommend";
             tabRecommend.UseVisualStyleBackColor = true;
 
@@ -473,7 +540,7 @@ namespace DocControl
             tabSettings.Location = new Point(4, 24);
             tabSettings.Name = "tabSettings";
             tabSettings.Size = new Size(776, 433);
-            tabSettings.TabIndex = 3;
+            tabSettings.TabIndex = 4;
             tabSettings.Text = "Settings";
             tabSettings.UseVisualStyleBackColor = true;
 
@@ -593,33 +660,47 @@ namespace DocControl
             tabAudit.Location = new Point(4, 24);
             tabAudit.Name = "tabAudit";
             tabAudit.Size = new Size(776, 433);
-            tabAudit.TabIndex = 4;
+            tabAudit.TabIndex = 5;
             tabAudit.Text = "Audit";
             tabAudit.UseVisualStyleBackColor = true;
 
-            labelAuditAction.AutoSize = true;
-            labelAuditAction.Location = new Point(24, 27);
-            labelAuditAction.Name = "labelAuditAction";
-            labelAuditAction.Size = new Size(42, 15);
-            labelAuditAction.TabIndex = 0;
-            labelAuditAction.Text = "Action";
+            btnAuditRefresh.Location = new Point(24, 24);
+            btnAuditRefresh.Name = "btnAuditRefresh";
+            btnAuditRefresh.Size = new Size(135, 27);
+            btnAuditRefresh.TabIndex = 0;
+            btnAuditRefresh.Text = "Refresh";
+            btnAuditRefresh.UseVisualStyleBackColor = true;
 
-            txtAuditAction.Location = new Point(104, 24);
-            txtAuditAction.Name = "txtAuditAction";
-            txtAuditAction.Size = new Size(152, 23);
-            txtAuditAction.TabIndex = 1;
+            btnAuditFilter.Location = new Point(165, 24);
+            btnAuditFilter.Name = "btnAuditFilter";
+            btnAuditFilter.Size = new Size(135, 27);
+            btnAuditFilter.TabIndex = 1;
+            btnAuditFilter.Text = "Filter";
+            btnAuditFilter.UseVisualStyleBackColor = true;
 
             labelAuditUser.AutoSize = true;
-            labelAuditUser.Location = new Point(24, 59);
+            labelAuditUser.Location = new Point(24, 60);
             labelAuditUser.Name = "labelAuditUser";
-            labelAuditUser.Size = new Size(34, 15);
+            labelAuditUser.Size = new Size(30, 15);
             labelAuditUser.TabIndex = 2;
             labelAuditUser.Text = "User:";
 
-            txtAuditUser.Location = new Point(104, 56);
+            txtAuditUser.Location = new Point(104, 57);
             txtAuditUser.Name = "txtAuditUser";
-            txtAuditUser.Size = new Size(152, 23);
+            txtAuditUser.Size = new Size(200, 23);
             txtAuditUser.TabIndex = 3;
+
+            labelAuditAction.AutoSize = true;
+            labelAuditAction.Location = new Point(320, 60);
+            labelAuditAction.Name = "labelAuditAction";
+            labelAuditAction.Size = new Size(45, 15);
+            labelAuditAction.TabIndex = 4;
+            labelAuditAction.Text = "Action:";
+
+            txtAuditAction.Location = new Point(380, 57);
+            txtAuditAction.Name = "txtAuditAction";
+            txtAuditAction.Size = new Size(200, 23);
+            txtAuditAction.TabIndex = 5;
 
             lvAudit.Columns.AddRange(new ColumnHeader[] { colAt, colBy, colAction, colPayload, colDocId });
             lvAudit.FullRowSelect = true;
@@ -627,84 +708,66 @@ namespace DocControl
             lvAudit.HideSelection = false;
             lvAudit.Location = new Point(24, 90);
             lvAudit.Name = "lvAudit";
-            lvAudit.Size = new Size(728, 280);
-            lvAudit.TabIndex = 4;
+            lvAudit.Size = new Size(728, 250);
+            lvAudit.TabIndex = 6;
             lvAudit.UseCompatibleStateImageBehavior = false;
             lvAudit.View = View.Details;
 
-            colAt.Text = "At";
-            colAt.Width = 120;
+            colAt.Text = "Timestamp";
+            colAt.Width = 150;
 
-            colBy.Text = "By";
-            colBy.Width = 120;
+            colBy.Text = "User";
+            colBy.Width = 100;
 
             colAction.Text = "Action";
-            colAction.Width = 120;
+            colAction.Width = 100;
 
             colPayload.Text = "Payload";
-            colPayload.Width = 245;
+            colPayload.Width = 250;
 
             colDocId.Text = "Doc ID";
-            colDocId.Width = 120;
+            colDocId.Width = 100;
 
-            btnAuditRefresh.Location = new Point(24, 385);
-            btnAuditRefresh.Name = "btnAuditRefresh";
-            btnAuditRefresh.Size = new Size(135, 27);
-            btnAuditRefresh.TabIndex = 5;
-            btnAuditRefresh.Text = "Refresh";
-            btnAuditRefresh.UseVisualStyleBackColor = true;
-            btnAuditRefresh.Click += btnAuditRefresh_Click;
-
-            btnAuditFilter.Location = new Point(165, 385);
-            btnAuditFilter.Name = "btnAuditFilter";
-            btnAuditFilter.Size = new Size(135, 27);
-            btnAuditFilter.TabIndex = 6;
-            btnAuditFilter.Text = "Apply Filter";
-            btnAuditFilter.UseVisualStyleBackColor = true;
-            btnAuditFilter.Click += btnAuditFilter_Click;
-
-            btnAuditPrev.Location = new Point(429, 385);
+            btnAuditPrev.Location = new Point(24, 350);
             btnAuditPrev.Name = "btnAuditPrev";
-            btnAuditPrev.Size = new Size(135, 27);
+            btnAuditPrev.Size = new Size(100, 27);
             btnAuditPrev.TabIndex = 7;
-            btnAuditPrev.Text = "Previous";
+            btnAuditPrev.Text = "< Previous";
             btnAuditPrev.UseVisualStyleBackColor = true;
-            btnAuditPrev.Click += btnAuditPrev_Click;
-
-            btnAuditNext.Location = new Point(570, 385);
-            btnAuditNext.Name = "btnAuditNext";
-            btnAuditNext.Size = new Size(135, 27);
-            btnAuditNext.TabIndex = 8;
-            btnAuditNext.Text = "Next";
-            btnAuditNext.UseVisualStyleBackColor = true;
-            btnAuditNext.Click += btnAuditNext_Click;
 
             lblAuditPage.AutoSize = true;
-            lblAuditPage.Location = new Point(24, 415);
+            lblAuditPage.Location = new Point(350, 356);
             lblAuditPage.Name = "lblAuditPage";
-            lblAuditPage.Size = new Size(72, 15);
-            lblAuditPage.TabIndex = 9;
-            lblAuditPage.Text = "Page 1 / 1";
+            lblAuditPage.Size = new Size(50, 15);
+            lblAuditPage.TabIndex = 8;
+            lblAuditPage.Text = "Page 1/1";
+            lblAuditPage.TextAlign = ContentAlignment.MiddleCenter;
+
+            btnAuditNext.Location = new Point(652, 350);
+            btnAuditNext.Name = "btnAuditNext";
+            btnAuditNext.Size = new Size(100, 27);
+            btnAuditNext.TabIndex = 9;
+            btnAuditNext.Text = "Next >";
+            btnAuditNext.UseVisualStyleBackColor = true;
 
             // tabDocs
             tabDocs.Controls.Add(btnDocsRefresh);
+            tabDocs.Controls.Add(btnImportCsv);
             tabDocs.Controls.Add(lvDocs);
             tabDocs.Controls.Add(lblImportPerSeriesDocs);
-            tabDocs.Controls.Add(btnImportCsv);
             tabDocs.Location = new Point(4, 24);
             tabDocs.Name = "tabDocs";
-            tabDocs.Padding = new Padding(3);
             tabDocs.Size = new Size(776, 433);
-            tabDocs.TabIndex = 5;
+            tabDocs.TabIndex = 7;
             tabDocs.Text = "Documents";
             tabDocs.UseVisualStyleBackColor = true;
 
             lblImportPerSeriesDocs.AutoSize = true;
             lblImportPerSeriesDocs.Location = new Point(24, 24);
             lblImportPerSeriesDocs.Name = "lblImportPerSeriesDocs";
-            lblImportPerSeriesDocs.Size = new Size(283, 15);
+            lblImportPerSeriesDocs.Size = new Size(150, 15);
             lblImportPerSeriesDocs.TabIndex = 0;
-            lblImportPerSeriesDocs.Text = "Documents can be imported per series configuration.";
+            lblImportPerSeriesDocs.Text = "Manage document records";
 
             btnImportCsv.Location = new Point(24, 54);
             btnImportCsv.Name = "btnImportCsv";
@@ -712,7 +775,13 @@ namespace DocControl
             btnImportCsv.TabIndex = 1;
             btnImportCsv.Text = "Import CSV";
             btnImportCsv.UseVisualStyleBackColor = true;
-            btnImportCsv.Click += btnImportCsv_Click;
+
+            btnDocsRefresh.Location = new Point(165, 54);
+            btnDocsRefresh.Name = "btnDocsRefresh";
+            btnDocsRefresh.Size = new Size(135, 27);
+            btnDocsRefresh.TabIndex = 2;
+            btnDocsRefresh.Text = "Refresh";
+            btnDocsRefresh.UseVisualStyleBackColor = true;
 
             lvDocs.Columns.AddRange(new ColumnHeader[] { colDocCode, colDocFile, colDocBy, colDocAt });
             lvDocs.FullRowSelect = true;
@@ -721,41 +790,27 @@ namespace DocControl
             lvDocs.Location = new Point(24, 90);
             lvDocs.Name = "lvDocs";
             lvDocs.Size = new Size(728, 319);
-            lvDocs.TabIndex = 2;
+            lvDocs.TabIndex = 3;
             lvDocs.UseCompatibleStateImageBehavior = false;
             lvDocs.View = View.Details;
 
-            colDocCode.Text = "Doc Code";
-            colDocCode.Width = 120;
+            colDocCode.Text = "Document Code";
+            colDocCode.Width = 150;
 
             colDocFile.Text = "File Name";
-            colDocFile.Width = 300;
+            colDocFile.Width = 250;
 
             colDocBy.Text = "Created By";
-            colDocBy.Width = 120;
+            colDocBy.Width = 100;
 
             colDocAt.Text = "Created At";
-            colDocAt.Width = 120;
-
-            btnDocsRefresh.Location = new Point(24, 385);
-            btnDocsRefresh.Name = "btnDocsRefresh";
-            btnDocsRefresh.Size = new Size(135, 27);
-            btnDocsRefresh.TabIndex = 6;
-            btnDocsRefresh.Text = "Refresh";
-            btnDocsRefresh.UseVisualStyleBackColor = true;
-            btnDocsRefresh.Click += btnDocsRefresh_Click;
-
-            // Form1
-            AutoScaleDimensions = new SizeF(7F, 15F);
-            AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(784, 461);
-            Controls.Add(tabControl1);
-            Name = "Form1";
-            Text = "Document Control Panel";
+            colDocAt.Width = 150;
 
             tabControl1.ResumeLayout(false);
             tabGenerate.ResumeLayout(false);
             tabGenerate.PerformLayout();
+            tabCodes.ResumeLayout(false);
+            tabCodes.PerformLayout();
             tabImport.ResumeLayout(false);
             tabImport.PerformLayout();
             tabRecommend.ResumeLayout(false);
@@ -767,6 +822,14 @@ namespace DocControl
             tabAudit.PerformLayout();
             tabDocs.ResumeLayout(false);
             tabDocs.PerformLayout();
+
+            Controls.Add(tabControl1);
+            AutoScaleDimensions = new SizeF(7F, 15F);
+            AutoScaleMode = AutoScaleMode.Font;
+            ClientSize = new Size(784, 461);
+            Name = "Form1";
+            Text = "DocControl";
+
             ResumeLayout(false);
         }
 
@@ -774,6 +837,7 @@ namespace DocControl
 
         private TabControl tabControl1;
         private TabPage tabGenerate;
+        private TabPage tabCodes;
         private TabPage tabImport;
         private TabPage tabRecommend;
         private TabPage tabSettings;
@@ -796,6 +860,14 @@ namespace DocControl
         private Label label7;
         private Label lblGenerateResult;
         private Label lblNoDelete;
+
+        private Button btnCodesImportCsv;
+        private Button btnCodesRefresh;
+        private ListView lvCodes;
+        private ColumnHeader colCodeLevel;
+        private ColumnHeader colCodeValue;
+        private ColumnHeader colCodeDescription;
+        private Label lblCodesInfo;
 
         private Label lblImportResult;
         private ListBox lstImportInvalid;
