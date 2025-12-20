@@ -90,8 +90,9 @@ namespace DocControl
 
             var selectedLevel1 = string.IsNullOrWhiteSpace(cmbLevel1.Text) ? null : cmbLevel1.Text.Trim();
             
-            // Clear and repopulate Level2
-            var level2Codes = await codeSeriesRepository.GetLevel2CodesAsync(selectedLevel1);
+            // Always repopulate Level2 with all available Level2 codes
+            // Since we store codes separately, not hierarchically
+            var level2Codes = await codeSeriesRepository.GetLevel2CodesAsync(null);
             cmbLevel2.Items.Clear();
             cmbLevel2.Items.Add(""); // Add empty option
             foreach (var code in level2Codes)
@@ -99,9 +100,16 @@ namespace DocControl
                 cmbLevel2.Items.Add(code);
             }
 
-            // Clear dependent levels
+            // Always repopulate Level3 with all available Level3 codes
+            var level3Codes = await codeSeriesRepository.GetLevel3CodesAsync(null, null);
             cmbLevel3.Items.Clear();
-            cmbLevel3.Items.Add("");
+            cmbLevel3.Items.Add(""); // Add empty option
+            foreach (var code in level3Codes)
+            {
+                cmbLevel3.Items.Add(code);
+            }
+
+            // Clear Level4
             cmbLevel4.Items.Clear();
             cmbLevel4.Items.Add("");
         }
@@ -110,11 +118,9 @@ namespace DocControl
         {
             if (codeSeriesRepository is null) return;
 
-            var selectedLevel1 = string.IsNullOrWhiteSpace(cmbLevel1.Text) ? null : cmbLevel1.Text.Trim();
-            var selectedLevel2 = string.IsNullOrWhiteSpace(cmbLevel2.Text) ? null : cmbLevel2.Text.Trim();
-            
-            // Clear and repopulate Level3
-            var level3Codes = await codeSeriesRepository.GetLevel3CodesAsync(selectedLevel1, selectedLevel2);
+            // Always repopulate Level3 with all available Level3 codes
+            // Since we store codes separately, not hierarchically
+            var level3Codes = await codeSeriesRepository.GetLevel3CodesAsync(null, null);
             cmbLevel3.Items.Clear();
             cmbLevel3.Items.Add(""); // Add empty option
             foreach (var code in level3Codes)
@@ -122,7 +128,7 @@ namespace DocControl
                 cmbLevel3.Items.Add(code);
             }
 
-            // Clear dependent level
+            // Clear Level4
             cmbLevel4.Items.Clear();
             cmbLevel4.Items.Add("");
         }
@@ -131,12 +137,9 @@ namespace DocControl
         {
             if (codeSeriesRepository is null || !chkEnableLevel4.Checked) return;
 
-            var selectedLevel1 = string.IsNullOrWhiteSpace(cmbLevel1.Text) ? null : cmbLevel1.Text.Trim();
-            var selectedLevel2 = string.IsNullOrWhiteSpace(cmbLevel2.Text) ? null : cmbLevel2.Text.Trim();
-            var selectedLevel3 = string.IsNullOrWhiteSpace(cmbLevel3.Text) ? null : cmbLevel3.Text.Trim();
-            
-            // Clear and repopulate Level4
-            var level4Codes = await codeSeriesRepository.GetLevel4CodesAsync(selectedLevel1, selectedLevel2, selectedLevel3);
+            // Always repopulate Level4 with all available Level4 codes
+            // Since we store codes separately, not hierarchically
+            var level4Codes = await codeSeriesRepository.GetLevel4CodesAsync(null, null, null);
             cmbLevel4.Items.Clear();
             cmbLevel4.Items.Add(""); // Add empty option
             foreach (var code in level4Codes)
@@ -151,10 +154,9 @@ namespace DocControl
             await Task.Delay(300);
             if (codeSeriesRepository is null) return;
 
-            var selectedLevel1 = string.IsNullOrWhiteSpace(cmbLevel1.Text) ? null : cmbLevel1.Text.Trim();
-            
-            // Clear and repopulate Level2
-            var level2Codes = await codeSeriesRepository.GetLevel2CodesAsync(selectedLevel1);
+            // Always repopulate Level2 with all available Level2 codes
+            // Since we store codes separately, not hierarchically
+            var level2Codes = await codeSeriesRepository.GetLevel2CodesAsync(null);
             cmbLevel2.Items.Clear();
             cmbLevel2.Items.Add(""); // Add empty option
             foreach (var code in level2Codes)
@@ -162,9 +164,16 @@ namespace DocControl
                 cmbLevel2.Items.Add(code);
             }
 
-            // Clear dependent levels
+            // Always repopulate Level3 with all available Level3 codes
+            var level3Codes = await codeSeriesRepository.GetLevel3CodesAsync(null, null);
             cmbLevel3.Items.Clear();
-            cmbLevel3.Items.Add("");
+            cmbLevel3.Items.Add(""); // Add empty option
+            foreach (var code in level3Codes)
+            {
+                cmbLevel3.Items.Add(code);
+            }
+
+            // Clear Level4
             cmbLevel4.Items.Clear();
             cmbLevel4.Items.Add("");
         }
@@ -175,11 +184,9 @@ namespace DocControl
             await Task.Delay(300);
             if (codeSeriesRepository is null) return;
 
-            var selectedLevel1 = string.IsNullOrWhiteSpace(cmbLevel1.Text) ? null : cmbLevel1.Text.Trim();
-            var selectedLevel2 = string.IsNullOrWhiteSpace(cmbLevel2.Text) ? null : cmbLevel2.Text.Trim();
-            
-            // Clear and repopulate Level3
-            var level3Codes = await codeSeriesRepository.GetLevel3CodesAsync(selectedLevel1, selectedLevel2);
+            // Always repopulate Level3 with all available Level3 codes
+            // Since we store codes separately, not hierarchically
+            var level3Codes = await codeSeriesRepository.GetLevel3CodesAsync(null, null);
             cmbLevel3.Items.Clear();
             cmbLevel3.Items.Add(""); // Add empty option
             foreach (var code in level3Codes)
@@ -187,7 +194,7 @@ namespace DocControl
                 cmbLevel3.Items.Add(code);
             }
 
-            // Clear dependent level
+            // Clear Level4
             cmbLevel4.Items.Clear();
             cmbLevel4.Items.Add("");
         }
@@ -198,12 +205,9 @@ namespace DocControl
             await Task.Delay(300);
             if (codeSeriesRepository is null || !chkEnableLevel4.Checked) return;
 
-            var selectedLevel1 = string.IsNullOrWhiteSpace(cmbLevel1.Text) ? null : cmbLevel1.Text.Trim();
-            var selectedLevel2 = string.IsNullOrWhiteSpace(cmbLevel2.Text) ? null : cmbLevel2.Text.Trim();
-            var selectedLevel3 = string.IsNullOrWhiteSpace(cmbLevel3.Text) ? null : cmbLevel3.Text.Trim();
-            
-            // Clear and repopulate Level4
-            var level4Codes = await codeSeriesRepository.GetLevel4CodesAsync(selectedLevel1, selectedLevel2, selectedLevel3);
+            // Always repopulate Level4 with all available Level4 codes
+            // Since we store codes separately, not hierarchically
+            var level4Codes = await codeSeriesRepository.GetLevel4CodesAsync(null, null, null);
             cmbLevel4.Items.Clear();
             cmbLevel4.Items.Add(""); // Add empty option
             foreach (var code in level4Codes)
@@ -223,8 +227,54 @@ namespace DocControl
                 UseVisualStyleBackColor = true
             };
             btnImportCodes.Click += BtnImportCodes_Click;
-            
+
+            var btnClearDocuments = new Button
+            {
+                Text = "Clear documents",
+                Size = new Size(135, 27),
+                Location = new Point(325, 99),
+                UseVisualStyleBackColor = true
+            };
+            btnClearDocuments.Click += BtnClearDocuments_Click;
+
             tabImport.Controls.Add(btnImportCodes);
+            tabImport.Controls.Add(btnClearDocuments);
+        }
+
+        private async void BtnClearDocuments_Click(object? sender, EventArgs e)
+        {
+            if (documentRepository is null)
+            {
+                MessageBox.Show("Service unavailable");
+                return;
+            }
+
+            var confirm = MessageBox.Show(
+                "This will delete ALL document entries (file names/history) and audit entries. Codes will NOT be deleted.\n\nContinue?",
+                "Confirm clear",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning);
+
+            if (confirm != DialogResult.Yes) return;
+
+            try
+            {
+                await documentRepository.ClearAllAsync();
+
+                // Refresh UI lists if user has those tabs open later
+                lvDocs.Items.Clear();
+                lvAudit.Items.Clear();
+                lblImportResult.Text = string.Empty;
+                lblImportNote.Text = string.Empty;
+                lstImportInvalid.Items.Clear();
+                lvImportSummary.Items.Clear();
+
+                MessageBox.Show("Documents/audit history cleared.");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Clear failed: {ex.Message}");
+            }
         }
 
         private async void BtnImportCodes_Click(object? sender, EventArgs e)

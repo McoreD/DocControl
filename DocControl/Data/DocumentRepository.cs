@@ -122,4 +122,24 @@ public sealed class DocumentRepository
         }
         return null;
     }
+
+    public async Task ClearAllAsync(CancellationToken cancellationToken = default)
+    {
+        await using var conn = factory.Create();
+        await conn.OpenAsync(cancellationToken).ConfigureAwait(false);
+        await using var tx = (SqliteTransaction)await conn.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
+
+        // Audit has a FK to Documents; remove Audit first.
+        var delAudit = conn.CreateCommand();
+        delAudit.Transaction = tx;
+        delAudit.CommandText = "DELETE FROM Audit;";
+        await delAudit.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+
+        var delDocs = conn.CreateCommand();
+        delDocs.Transaction = tx;
+        delDocs.CommandText = "DELETE FROM Documents;";
+        await delDocs.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+
+        await tx.CommitAsync(cancellationToken).ConfigureAwait(false);
+    }
 }
