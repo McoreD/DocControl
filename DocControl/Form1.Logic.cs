@@ -347,6 +347,9 @@ namespace DocControl
             {
                 var result = await documentService.CreateAsync(key, freeText, Environment.UserName, null, ext);
                 lblGenerateResult.Text = $"Created: {result.FileName} (audited)";
+                
+                // Refresh the documents list in the Documents tab
+                await LoadDocsAsync();
             }
             catch (Exception ex)
             {
@@ -726,29 +729,50 @@ namespace DocControl
 
         private async Task LoadDocsAsync()
         {
-            if (documentRepository is null) { MessageBox.Show("Service unavailable"); return; }
-            lvDocs.Items.Clear();
-            var docs = await documentRepository.GetRecentAsync();
-            foreach (var doc in docs)
+            if (documentRepository is null) 
+            { 
+                MessageBox.Show("Document repository service unavailable"); 
+                return; 
+            }
+
+            try
             {
-                var sep = documentConfig?.Separator ?? "-";
-                var pad = documentConfig?.PaddingLength ?? 3;
-                var num = doc.Number.ToString().PadLeft(pad, '0');
-
-                var parts = new List<string> { doc.Level1, doc.Level2, doc.Level3 };
-                if (documentConfig?.EnableLevel4 == true && !string.IsNullOrWhiteSpace(doc.Level4))
+                lvDocs.Items.Clear();
+                var docs = await documentRepository.GetRecentAsync();
+                
+                if (docs.Count == 0)
                 {
-                    parts.Add(doc.Level4);
+                    MessageBox.Show($"No documents found in database.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
                 }
-                parts.Add(num);
 
-                var code = string.Join(sep, parts);
+                foreach (var doc in docs)
+                {
+                    var sep = documentConfig?.Separator ?? "-";
+                    var pad = documentConfig?.PaddingLength ?? 3;
+                    var num = doc.Number.ToString().PadLeft(pad, '0');
 
-                var item = new ListViewItem(code) { Tag = doc };
-                item.SubItems.Add(doc.FileName);
-                item.SubItems.Add(doc.CreatedBy);
-                item.SubItems.Add(doc.CreatedAtUtc.ToLocalTime().ToString("g"));
-                lvDocs.Items.Add(item);
+                    var parts = new List<string> { doc.Level1, doc.Level2, doc.Level3 };
+                    if (documentConfig?.EnableLevel4 == true && !string.IsNullOrWhiteSpace(doc.Level4))
+                    {
+                        parts.Add(doc.Level4);
+                    }
+                    parts.Add(num);
+
+                    var code = string.Join(sep, parts);
+
+                    var item = new ListViewItem(code) { Tag = doc };
+                    item.SubItems.Add(doc.FileName);
+                    item.SubItems.Add(doc.CreatedBy);
+                    item.SubItems.Add(doc.CreatedAtUtc.ToLocalTime().ToString("g"));
+                    lvDocs.Items.Add(item);
+                }
+                
+                MessageBox.Show($"Loaded {docs.Count} documents.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to load documents: {ex.Message}\n\nStack trace:\n{ex.StackTrace}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
