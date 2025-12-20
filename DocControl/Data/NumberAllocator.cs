@@ -33,12 +33,27 @@ public sealed class NumberAllocator
         ensureCmd.Parameters.AddWithValue("$l4", (object?)key.Level4 ?? DBNull.Value);
         await ensureCmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
 
-        // Select current next number and id
+        // Check the actual max number in Documents table
+        var maxDocCmd = conn.CreateCommand();
+        maxDocCmd.Transaction = tx;
+        maxDocCmd.CommandText = @"
+            SELECT MAX(Number) FROM Documents 
+            WHERE Level1 = $l1 AND Level2 = $l2 AND Level3 = $l3 AND Level4 IS $l4OrNull;
+        ";
+        maxDocCmd.Parameters.AddWithValue("$l1", key.Level1);
+        maxDocCmd.Parameters.AddWithValue("$l2", key.Level2);
+        maxDocCmd.Parameters.AddWithValue("$l3", key.Level3);
+        maxDocCmd.Parameters.AddWithValue("$l4OrNull", (object?)key.Level4 ?? DBNull.Value);
+        
+        var maxDocResult = await maxDocCmd.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
+        var maxDocNumber = (maxDocResult is DBNull || maxDocResult is null) ? 0 : Convert.ToInt32(maxDocResult);
+
+        // Select current next number and id from CodeSeries
         var selectCmd = conn.CreateCommand();
         selectCmd.Transaction = tx;
         selectCmd.CommandText = @"
             SELECT Id, NextNumber FROM CodeSeries
-            WHERE Level1 = $l1 AND Level2 = $l2 AND Level3 = $l3 AND Level4 IS $l4OrNull AND ($l4OrNull IS NOT NULL OR Level4 IS NULL);
+            WHERE Level1 = $l1 AND Level2 = $l2 AND Level3 = $l3 AND Level4 IS $l4OrNull;
         ";
         selectCmd.Parameters.AddWithValue("$l1", key.Level1);
         selectCmd.Parameters.AddWithValue("$l2", key.Level2);
@@ -57,16 +72,21 @@ public sealed class NumberAllocator
             nextNumber = reader.GetInt32(1);
         }
 
+        // Use the higher of: CodeSeries.NextNumber or (max document number + 1)
+        var actualNextNumber = Math.Max(nextNumber, maxDocNumber + 1);
+
+        // Update CodeSeries with the new next number
         var updateCmd = conn.CreateCommand();
         updateCmd.Transaction = tx;
         updateCmd.CommandText = @"
-            UPDATE CodeSeries SET NextNumber = NextNumber + 1 WHERE Id = $id;
+            UPDATE CodeSeries SET NextNumber = $newNext WHERE Id = $id;
         ";
         updateCmd.Parameters.AddWithValue("$id", seriesId);
+        updateCmd.Parameters.AddWithValue("$newNext", actualNextNumber + 1);
         await updateCmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
 
         await tx.CommitAsync(cancellationToken).ConfigureAwait(false);
 
-        return new AllocatedNumber(seriesId, nextNumber);
+        return new AllocatedNumber(seriesId, actualNextNumber);
     }
 }
