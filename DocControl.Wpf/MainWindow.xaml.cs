@@ -476,7 +476,14 @@ namespace DocControl.Wpf
         private async Task LoadDocsAsync()
         {
             lvDocs.Items.Clear();
-            var docs = await controller.LoadRecentDocumentsAsync();
+            
+            string? level1Filter = string.IsNullOrWhiteSpace(txtDocsFilterLevel1.Text) ? null : txtDocsFilterLevel1.Text.Trim();
+            string? level2Filter = string.IsNullOrWhiteSpace(txtDocsFilterLevel2.Text) ? null : txtDocsFilterLevel2.Text.Trim();
+            string? level3Filter = string.IsNullOrWhiteSpace(txtDocsFilterLevel3.Text) ? null : txtDocsFilterLevel3.Text.Trim();
+            string? fileNameFilter = string.IsNullOrWhiteSpace(txtDocsFilterFileName.Text) ? null : txtDocsFilterFileName.Text.Trim();
+            
+            var docs = await controller.LoadFilteredDocumentsAsync(level1Filter, level2Filter, level3Filter, fileNameFilter);
+            
             foreach (var doc in docs)
             {
                 var sep = documentConfig.Separator;
@@ -501,9 +508,29 @@ namespace DocControl.Wpf
                     Document = doc
                 });
             }
+            
+            // Update result count label
+            if (level1Filter != null || level2Filter != null || level3Filter != null || fileNameFilter != null)
+            {
+                lblDocsResultCount.Text = $"Found {docs.Count} document(s)";
+            }
+            else
+            {
+                lblDocsResultCount.Text = $"Showing {docs.Count} recent document(s)";
+            }
         }
 
         private async void btnDocsRefresh_Click(object sender, RoutedEventArgs e)
+        {
+            // Clear filters and reload all recent documents
+            txtDocsFilterLevel1.Text = string.Empty;
+            txtDocsFilterLevel2.Text = string.Empty;
+            txtDocsFilterLevel3.Text = string.Empty;
+            txtDocsFilterFileName.Text = string.Empty;
+            await LoadDocsAsync();
+        }
+
+        private async void btnDocsFilter_Click(object sender, RoutedEventArgs e)
         {
             await LoadDocsAsync();
         }

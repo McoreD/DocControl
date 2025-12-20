@@ -97,6 +97,69 @@ public sealed class DocumentRepository
         return list;
     }
 
+    public async Task<IReadOnlyList<DocumentRecord>> GetFilteredAsync(string? level1Filter = null, string? level2Filter = null, string? level3Filter = null, string? fileNameFilter = null, int take = 1000, CancellationToken cancellationToken = default)
+    {
+        var list = new List<DocumentRecord>();
+        await using var conn = factory.Create();
+        await conn.OpenAsync(cancellationToken).ConfigureAwait(false);
+        
+        var whereConditions = new List<string>();
+        var cmd = conn.CreateCommand();
+        
+        // Build WHERE clause based on filters
+        if (!string.IsNullOrWhiteSpace(level1Filter))
+        {
+            whereConditions.Add("Level1 LIKE $level1");
+            cmd.Parameters.AddWithValue("$level1", $"%{level1Filter}%");
+        }
+        
+        if (!string.IsNullOrWhiteSpace(level2Filter))
+        {
+            whereConditions.Add("Level2 LIKE $level2");
+            cmd.Parameters.AddWithValue("$level2", $"%{level2Filter}%");
+        }
+        
+        if (!string.IsNullOrWhiteSpace(level3Filter))
+        {
+            whereConditions.Add("Level3 LIKE $level3");
+            cmd.Parameters.AddWithValue("$level3", $"%{level3Filter}%");
+        }
+        
+        if (!string.IsNullOrWhiteSpace(fileNameFilter))
+        {
+            whereConditions.Add("FileName LIKE $fileName");
+            cmd.Parameters.AddWithValue("$fileName", $"%{fileNameFilter}%");
+        }
+        
+        var whereClause = whereConditions.Count > 0 ? "WHERE " + string.Join(" AND ", whereConditions) : "";
+        
+        cmd.CommandText = $@"
+            SELECT Id, Level1, Level2, Level3, Level4, Number, FileName, CreatedBy, CreatedAt 
+            FROM Documents 
+            {whereClause}
+            ORDER BY Id DESC 
+            LIMIT $take;";
+        cmd.Parameters.AddWithValue("$take", take);
+
+        await using var reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+        {
+            list.Add(new DocumentRecord
+            {
+                Id = reader.GetInt32(0),
+                Level1 = reader.GetString(1),
+                Level2 = reader.GetString(2),
+                Level3 = reader.GetString(3),
+                Level4 = reader.IsDBNull(4) ? null : reader.GetString(4),
+                Number = reader.GetInt32(5),
+                FileName = reader.GetString(6),
+                CreatedBy = reader.GetString(7),
+                CreatedAtUtc = DateTime.Parse(reader.GetString(8))
+            });
+        }
+        return list;
+    }
+
     public async Task<DocumentRecord?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
         await using var conn = factory.Create();

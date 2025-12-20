@@ -175,6 +175,17 @@ public sealed class MainController
     public Task<IReadOnlyList<DocumentRecord>> LoadRecentDocumentsAsync(CancellationToken cancellationToken = default)
         => documentRepository.GetRecentAsync(cancellationToken: cancellationToken);
 
+    public Task<IReadOnlyList<DocumentRecord>> LoadFilteredDocumentsAsync(string? level1Filter = null, string? level2Filter = null, string? level3Filter = null, string? fileNameFilter = null, CancellationToken cancellationToken = default)
+    {
+        // If no filters provided, return recent documents
+        if (string.IsNullOrWhiteSpace(level1Filter) && string.IsNullOrWhiteSpace(level2Filter) && string.IsNullOrWhiteSpace(level3Filter) && string.IsNullOrWhiteSpace(fileNameFilter))
+        {
+            return documentRepository.GetRecentAsync(cancellationToken: cancellationToken);
+        }
+        
+        return documentRepository.GetFilteredAsync(level1Filter, level2Filter, level3Filter, fileNameFilter, cancellationToken: cancellationToken);
+    }
+
     public Task<DocumentRecord?> GetDocumentAsync(int id, CancellationToken cancellationToken = default)
         => documentRepository.GetByIdAsync(id, cancellationToken);
 

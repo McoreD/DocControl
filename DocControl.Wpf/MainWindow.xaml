@@ -264,14 +264,55 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <Button Grid.Row="0" Name="btnDocsRefresh" Content="Refresh" Padding="10,5" Margin="0,0,0,10" HorizontalAlignment="Left" Click="btnDocsRefresh_Click"/>
-                
-                <TextBlock Grid.Row="1" Name="lblImportPerSeriesDocs" Text="Recent documents in the system" Margin="0,0,0,10"/>
+                <!-- First row: Level filters -->
+                <Grid Grid.Row="0" Margin="0,0,0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="80"/>
+                        <ColumnDefinition Width="150"/>
+                        <ColumnDefinition Width="80"/>
+                        <ColumnDefinition Width="150"/>
+                        <ColumnDefinition Width="80"/>
+                        <ColumnDefinition Width="150"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
 
-                <ListView Grid.Row="2" Name="lvDocs" MouseDoubleClick="lvDocs_DoubleClick">
+                    <Label Grid.Column="0" Content="Level 1:" VerticalAlignment="Center"/>
+                    <TextBox Grid.Column="1" Name="txtDocsFilterLevel1" Margin="0,5"/>
+
+                    <Label Grid.Column="2" Content="Level 2:" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                    <TextBox Grid.Column="3" Name="txtDocsFilterLevel2" Margin="0,5"/>
+
+                    <Label Grid.Column="4" Content="Level 3:" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                    <TextBox Grid.Column="5" Name="txtDocsFilterLevel3" Margin="0,5"/>
+                </Grid>
+
+                <!-- Second row: File Name and buttons -->
+                <Grid Grid.Row="1" Margin="0,0,0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="80"/>
+                        <ColumnDefinition Width="200"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Label Grid.Column="0" Content="File Name:" VerticalAlignment="Center"/>
+                    <TextBox Grid.Column="1" Name="txtDocsFilterFileName" Margin="0,5"/>
+
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button Name="btnDocsFilter" Content="Filter" Padding="10,5" Margin="5,0" Click="btnDocsFilter_Click"/>
+                        <Button Name="btnDocsRefresh" Content="Refresh" Padding="10,5" Margin="5,0" Click="btnDocsRefresh_Click"/>
+                    </StackPanel>
+                </Grid>
+                
+                <TextBlock Grid.Row="2" Name="lblImportPerSeriesDocs" Text="Recent documents in the system" Margin="0,0,0,10"/>
+
+                <TextBlock Grid.Row="3" Name="lblDocsResultCount" Text="" Margin="0,0,0,5" FontWeight="Bold"/>
+
+                <ListView Grid.Row="4" Name="lvDocs" MouseDoubleClick="lvDocs_DoubleClick">
                     <ListView.View>
                         <GridView>
                             <GridViewColumn Header="Code" Width="250" DisplayMemberBinding="{Binding Code}"/>
