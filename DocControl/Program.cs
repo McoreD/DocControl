@@ -1,9 +1,9 @@
 using DocControl.AI;
-using DocControl.Configuration;
-using DocControl.Data;
-using DocControl.Presentation;
-using DocControl.Security;
-using DocControl.Services;
+using DocControl.Core.Configuration;
+using DocControl.Infrastructure.Data;
+using DocControl.Infrastructure.Presentation;
+using DocControl.Core.Security;
+using DocControl.Infrastructure.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace DocControl

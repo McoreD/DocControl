@@ -1,4 +1,6 @@
 <Solution>
-  <Project Path=DocControl/DocControl.csproj />
-  <Project Path=DocControl.AI/DocControl.AI.csproj />
+  <Project Path="DocControl/DocControl.csproj" />
+  <Project Path="DocControl.AI/DocControl.AI.csproj" />
+  <Project Path="DocControl.Core/DocControl.Core.csproj" />
+  <Project Path="DocControl.Infrastructure/DocControl.Infrastructure.csproj" />
 </Solution>

@@ -1,4 +1,4 @@
-using DocControl.Presentation;
+using DocControl.Infrastructure.Presentation;
 
 namespace DocControl.Forms;
 
@@ -9,6 +9,11 @@ public partial class CodeImportForm : Form
     private Button importButton = null!;
     private Button selectFileButton = null!;
     private Label statusLabel = null!;
+    private TableLayoutPanel mainPanel;
+    private Panel filePanel;
+    private Label csvLabel;
+    private Panel buttonPanel;
+    private Button cancelButton;
     private ProgressBar progressBar = null!;
 
     public CodeImportForm(MainController mainController)
@@ -19,100 +24,123 @@ public partial class CodeImportForm : Form
 
     private void InitializeComponent()
     {
+        mainPanel = new TableLayoutPanel();
+        filePanel = new Panel();
+        selectFileButton = new Button();
+        csvLabel = new Label();
+        csvTextBox = new TextBox();
+        buttonPanel = new Panel();
+        importButton = new Button();
+        cancelButton = new Button();
+        statusLabel = new Label();
+        progressBar = new ProgressBar();
+        mainPanel.SuspendLayout();
+        filePanel.SuspendLayout();
+        buttonPanel.SuspendLayout();
         SuspendLayout();
-
-        Text = "Import Codes from CSV";
-        Size = new Size(800, 600);
-        StartPosition = FormStartPosition.CenterParent;
-
-        var mainPanel = new TableLayoutPanel
-        {
-            Dock = DockStyle.Fill,
-            ColumnCount = 1,
-            RowCount = 6,
-            Padding = new Padding(10)
-        };
-
-        // File selection
-        var filePanel = new Panel { Height = 35 };
-        selectFileButton = new Button
-        {
-            Text = "Select CSV File...",
-            Size = new Size(120, 25),
-            Location = new Point(0, 5)
-        };
-        selectFileButton.Click += SelectFileButton_Click;
-        filePanel.Controls.Add(selectFileButton);
-
-        // CSV content
-        var csvLabel = new Label
-        {
-            Text = "CSV Content (Level,Code,Description):",
-            AutoSize = true
-        };
-
-        csvTextBox = new TextBox
-        {
-            Multiline = true,
-            ScrollBars = ScrollBars.Both,
-            Dock = DockStyle.Fill,
-            Font = new Font("Consolas", 9),
-            Text = "Level,Code,Code Description\n1,DFS,Delpach Family Solutions Pty Ltd\n1,DFT,Delpach Family Trust\n1,DSF,DFS Superannuation Fund\n2,BNK,Bank\n2,EDU,Education\n3,AGE,Agenda\n3,ANL,Analysis"
-        };
-
-        // Buttons
-        var buttonPanel = new Panel { Height = 35 };
-        importButton = new Button
-        {
-            Text = "Import Codes",
-            Size = new Size(100, 25),
-            Location = new Point(0, 5)
-        };
-        importButton.Click += ImportButton_Click;
-
-        var cancelButton = new Button
-        {
-            Text = "Cancel",
-            Size = new Size(75, 25),
-            Location = new Point(110, 5),
-            DialogResult = DialogResult.Cancel
-        };
-
-        buttonPanel.Controls.AddRange(new Control[] { importButton, cancelButton });
-
-        // Status
-        statusLabel = new Label
-        {
-            Text = "Ready to import",
-            AutoSize = true
-        };
-
-        progressBar = new ProgressBar
-        {
-            Visible = false,
-            Style = ProgressBarStyle.Marquee,
-            Height = 20
-        };
-
+        // 
+        // mainPanel
+        // 
+        mainPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 20F));
         mainPanel.Controls.Add(filePanel);
         mainPanel.Controls.Add(csvLabel);
         mainPanel.Controls.Add(csvTextBox);
         mainPanel.Controls.Add(buttonPanel);
         mainPanel.Controls.Add(statusLabel);
         mainPanel.Controls.Add(progressBar);
-
-        mainPanel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-        mainPanel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-        mainPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
-        mainPanel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-        mainPanel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-        mainPanel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-
-        Controls.Add(mainPanel);
-        CancelButton = cancelButton;
+        mainPanel.Location = new Point(0, 0);
+        mainPanel.Name = "mainPanel";
+        mainPanel.RowStyles.Add(new RowStyle());
+        mainPanel.RowStyles.Add(new RowStyle());
+        mainPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+        mainPanel.RowStyles.Add(new RowStyle());
+        mainPanel.RowStyles.Add(new RowStyle());
+        mainPanel.RowStyles.Add(new RowStyle());
+        mainPanel.Size = new Size(200, 100);
+        mainPanel.TabIndex = 0;
+        // 
+        // filePanel
+        // 
+        filePanel.Controls.Add(selectFileButton);
+        filePanel.Location = new Point(3, 3);
+        filePanel.Name = "filePanel";
+        filePanel.Size = new Size(194, 100);
+        filePanel.TabIndex = 0;
+        // 
+        // selectFileButton
+        // 
+        selectFileButton.Location = new Point(0, 0);
+        selectFileButton.Name = "selectFileButton";
+        selectFileButton.Size = new Size(75, 23);
+        selectFileButton.TabIndex = 0;
+        selectFileButton.Click += SelectFileButton_Click;
+        // 
+        // csvLabel
+        // 
+        csvLabel.Location = new Point(3, 106);
+        csvLabel.Name = "csvLabel";
+        csvLabel.Size = new Size(100, 23);
+        csvLabel.TabIndex = 1;
+        // 
+        // csvTextBox
+        // 
+        csvTextBox.Location = new Point(3, 132);
+        csvTextBox.Name = "csvTextBox";
+        csvTextBox.Size = new Size(100, 27);
+        csvTextBox.TabIndex = 2;
+        // 
+        // buttonPanel
+        // 
+        buttonPanel.Controls.Add(importButton);
+        buttonPanel.Controls.Add(cancelButton);
+        buttonPanel.Location = new Point(3, -55);
+        buttonPanel.Name = "buttonPanel";
+        buttonPanel.Size = new Size(194, 100);
+        buttonPanel.TabIndex = 3;
+        // 
+        // importButton
+        // 
+        importButton.Location = new Point(0, 0);
+        importButton.Name = "importButton";
+        importButton.Size = new Size(75, 23);
+        importButton.TabIndex = 0;
+        importButton.Click += ImportButton_Click;
+        // 
+        // cancelButton
+        // 
+        cancelButton.Location = new Point(0, 0);
+        cancelButton.Name = "cancelButton";
+        cancelButton.Size = new Size(75, 23);
+        cancelButton.TabIndex = 1;
+        // 
+        // statusLabel
+        // 
+        statusLabel.Location = new Point(3, 48);
+        statusLabel.Name = "statusLabel";
+        statusLabel.Size = new Size(100, 23);
+        statusLabel.TabIndex = 4;
+        // 
+        // progressBar
+        // 
+        progressBar.Location = new Point(3, 74);
+        progressBar.Name = "progressBar";
+        progressBar.Size = new Size(100, 23);
+        progressBar.TabIndex = 5;
+        // 
+        // CodeImportForm
+        // 
         AcceptButton = importButton;
-
-        ResumeLayout();
+        CancelButton = cancelButton;
+        ClientSize = new Size(782, 553);
+        Controls.Add(mainPanel);
+        Name = "CodeImportForm";
+        StartPosition = FormStartPosition.CenterParent;
+        Text = "Import Codes from CSV";
+        mainPanel.ResumeLayout(false);
+        mainPanel.PerformLayout();
+        filePanel.ResumeLayout(false);
+        buttonPanel.ResumeLayout(false);
+        ResumeLayout(false);
     }
 
     private void SelectFileButton_Click(object? sender, EventArgs e)
