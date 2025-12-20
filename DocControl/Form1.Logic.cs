@@ -62,6 +62,8 @@ namespace DocControl
             try
             {
                 await PopulateLevel1CodesAsync();
+                await PopulateLevel2CodesAsync();
+                await PopulateLevel3CodesAsync();
             }
             catch (Exception ex)
             {
@@ -242,9 +244,6 @@ namespace DocControl
                 await PopulateLevel1CodesAsync();
                 await PopulateLevel2CodesAsync();
                 await PopulateLevel3CodesAsync();
-                
-                // Show debug info
-                await ShowDebugInfo();
             }
         }
 
@@ -271,33 +270,6 @@ namespace DocControl
             foreach (var code in codes)
             {
                 cmbLevel3.Items.Add(code);
-            }
-        }
-
-        private async Task ShowDebugInfo()
-        {
-            if (codeSeriesRepository is null) return;
-
-            try
-            {
-                var level1Codes = await codeSeriesRepository.GetLevel1CodesAsync();
-                var level2Codes = await codeSeriesRepository.GetLevel2CodesAsync(null);
-                var level3Codes = await codeSeriesRepository.GetLevel3CodesAsync(null, null);
-
-                var debugMessage = $"Database Query Results:\n\n" +
-                                   $"Level 1 Codes ({level1Codes.Count}): {string.Join(", ", level1Codes)}\n\n" +
-                                   $"Level 2 Codes ({level2Codes.Count}): {string.Join(", ", level2Codes)}\n\n" +
-                                   $"Level 3 Codes ({level3Codes.Count}): {string.Join(", ", level3Codes)}\n\n" +
-                                   $"ComboBox Items:\n" +
-                                   $"Level1 ComboBox: {cmbLevel1.Items.Count} items\n" +
-                                   $"Level2 ComboBox: {cmbLevel2.Items.Count} items\n" +
-                                   $"Level3 ComboBox: {cmbLevel3.Items.Count} items";
-
-                MessageBox.Show(debugMessage, "Debug Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Debug error: {ex.Message}", "Debug Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -675,43 +647,6 @@ namespace DocControl
             if (lvDocs.SelectedItems[0].Tag is not DocumentRecord doc) return;
             var level4 = string.IsNullOrWhiteSpace(doc.Level4) ? string.Empty : $"{documentConfig?.Separator}{doc.Level4}";
             MessageBox.Show($"DocId: {doc.Id}\nCode: {doc.Level1}{documentConfig?.Separator}{doc.Level2}{documentConfig?.Separator}{doc.Level3}{level4}{documentConfig?.Separator}{doc.Number}\nFile: {doc.FileName}\nBy: {doc.CreatedBy}\nAt: {doc.CreatedAtUtc.ToLocalTime():g}");
-        }
-
-        private async Task ShowDatabaseContents()
-        {
-            if (codeSeriesRepository is null) return;
-
-            try
-            {
-                // Use the repository methods instead of direct database access
-                var level1Codes = await codeSeriesRepository.GetLevel1CodesAsync();
-                var level2Codes = await codeSeriesRepository.GetLevel2CodesAsync(null);
-                var level3Codes = await codeSeriesRepository.GetLevel3CodesAsync(null, null);
-                
-                var results = new List<string>();
-                
-                foreach (var code in level1Codes)
-                {
-                    results.Add($"Level1: '{code}'");
-                }
-                
-                foreach (var code in level2Codes)
-                {
-                    results.Add($"Level2: '{code}'");
-                }
-                
-                foreach (var code in level3Codes)
-                {
-                    results.Add($"Level3: '{code}'");
-                }
-                
-                var message = "Database Contents via Repository:\n\n" + string.Join("\n", results);
-                MessageBox.Show(message, "Database Contents", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Database check error: {ex.Message}", "Database Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
         }
     }
 }
