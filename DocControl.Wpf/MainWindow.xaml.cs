@@ -506,7 +506,7 @@ namespace DocControl.Wpf
                 lvDocs.Items.Add(new
                 {
                     Code = code,
-                    FileName = doc.FileName,
+                    FreeText = doc.FreeText ?? string.Empty,
                     CreatedBy = doc.CreatedBy,
                     CreatedAt = doc.CreatedAtUtc.ToLocalTime().ToString("g"),
                     Document = doc

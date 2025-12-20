@@ -75,7 +75,7 @@ public sealed class DocumentRepository
         await using var conn = factory.Create();
         await conn.OpenAsync(cancellationToken).ConfigureAwait(false);
         var cmd = conn.CreateCommand();
-        cmd.CommandText = @"SELECT Id, Level1, Level2, Level3, Level4, Number, FileName, CreatedBy, CreatedAt FROM Documents ORDER BY Id DESC LIMIT $take;";
+        cmd.CommandText = @"SELECT Id, Level1, Level2, Level3, Level4, Number, FreeText, FileName, CreatedBy, CreatedAt FROM Documents ORDER BY Id DESC LIMIT $take;";
         cmd.Parameters.AddWithValue("$take", take);
 
         await using var reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
@@ -89,9 +89,10 @@ public sealed class DocumentRepository
                 Level3 = reader.GetString(3),
                 Level4 = reader.IsDBNull(4) ? null : reader.GetString(4),
                 Number = reader.GetInt32(5),
-                FileName = reader.GetString(6),
-                CreatedBy = reader.GetString(7),
-                CreatedAtUtc = DateTime.Parse(reader.GetString(8))
+                FreeText = reader.IsDBNull(6) ? null : reader.GetString(6),
+                FileName = reader.GetString(7),
+                CreatedBy = reader.GetString(8),
+                CreatedAtUtc = DateTime.Parse(reader.GetString(9))
             });
         }
         return list;
@@ -127,14 +128,14 @@ public sealed class DocumentRepository
         
         if (!string.IsNullOrWhiteSpace(fileNameFilter))
         {
-            whereConditions.Add("FileName LIKE $fileName");
-            cmd.Parameters.AddWithValue("$fileName", $"%{fileNameFilter}%");
+            whereConditions.Add("(FreeText LIKE $filter OR FileName LIKE $filter)");
+            cmd.Parameters.AddWithValue("$filter", $"%{fileNameFilter}%");
         }
         
         var whereClause = whereConditions.Count > 0 ? "WHERE " + string.Join(" AND ", whereConditions) : "";
         
         cmd.CommandText = $@"
-            SELECT Id, Level1, Level2, Level3, Level4, Number, FileName, CreatedBy, CreatedAt 
+            SELECT Id, Level1, Level2, Level3, Level4, Number, FreeText, FileName, CreatedBy, CreatedAt 
             FROM Documents 
             {whereClause}
             ORDER BY Id DESC 
@@ -152,9 +153,10 @@ public sealed class DocumentRepository
                 Level3 = reader.GetString(3),
                 Level4 = reader.IsDBNull(4) ? null : reader.GetString(4),
                 Number = reader.GetInt32(5),
-                FileName = reader.GetString(6),
-                CreatedBy = reader.GetString(7),
-                CreatedAtUtc = DateTime.Parse(reader.GetString(8))
+                FreeText = reader.IsDBNull(6) ? null : reader.GetString(6),
+                FileName = reader.GetString(7),
+                CreatedBy = reader.GetString(8),
+                CreatedAtUtc = DateTime.Parse(reader.GetString(9))
             });
         }
         return list;
@@ -165,7 +167,7 @@ public sealed class DocumentRepository
         await using var conn = factory.Create();
         await conn.OpenAsync(cancellationToken).ConfigureAwait(false);
         var cmd = conn.CreateCommand();
-        cmd.CommandText = @"SELECT Id, Level1, Level2, Level3, Level4, Number, FileName, CreatedBy, CreatedAt FROM Documents WHERE Id = $id;";
+        cmd.CommandText = @"SELECT Id, Level1, Level2, Level3, Level4, Number, FreeText, FileName, CreatedBy, CreatedAt FROM Documents WHERE Id = $id;";
         cmd.Parameters.AddWithValue("$id", id);
         await using var reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
         if (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
@@ -178,9 +180,10 @@ public sealed class DocumentRepository
                 Level3 = reader.GetString(3),
                 Level4 = reader.IsDBNull(4) ? null : reader.GetString(4),
                 Number = reader.GetInt32(5),
-                FileName = reader.GetString(6),
-                CreatedBy = reader.GetString(7),
-                CreatedAtUtc = DateTime.Parse(reader.GetString(8))
+                FreeText = reader.IsDBNull(6) ? null : reader.GetString(6),
+                FileName = reader.GetString(7),
+                CreatedBy = reader.GetString(8),
+                CreatedAtUtc = DateTime.Parse(reader.GetString(9))
             };
         }
         return null;

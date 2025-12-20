@@ -8,6 +8,7 @@ public sealed class DocumentRecord
     public string Level3 { get; init; } = string.Empty;
     public string? Level4 { get; init; }
     public int Number { get; init; }
+    public string? FreeText { get; init; }
     public string FileName { get; init; } = string.Empty;
     public string CreatedBy { get; init; } = string.Empty;
     public DateTime CreatedAtUtc { get; init; }
