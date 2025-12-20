@@ -20,6 +20,7 @@ public static class ServiceCollectionExtensions
             options.Gemini));
 
         services.AddSingleton<AiClientFactory>();
+        services.AddSingleton<AiOrchestrator>();
         return services;
     }
 }
