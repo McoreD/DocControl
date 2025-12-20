@@ -9,5 +9,5 @@ public sealed class DocumentConfig
     public string Level4Name { get; set; } = "Level4";
     public bool EnableLevel4 { get; set; } = false;
     public int PaddingLength { get; set; } = 3;
-    public string Separator { get; set; } = " ";
+    public string Separator { get; set; } = "-";
 }
