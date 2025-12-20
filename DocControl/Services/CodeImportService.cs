@@ -25,8 +25,8 @@ public sealed class CodeImportService
 
         // Skip header row if it exists
         var dataLines = lines.Skip(1);
-        var seriesToSeed = new List<(CodeSeriesKey key, int maxNumber)>();
-        
+        var codeSeriesData = new List<(CodeSeriesKey key, int maxNumber)>();
+
         foreach (var line in dataLines)
         {
             var parts = ParseCsvLine(line);
@@ -49,8 +49,8 @@ public sealed class CodeImportService
 
             try
             {
-                var codeSeriesKey = CreateCodeSeriesKey(level, code);
-                seriesToSeed.Add((codeSeriesKey, 0)); // Start with next number 1
+                var key = CreateCodeSeriesKey(level, code);
+                codeSeriesData.Add((key, 1)); // Start with NextNumber = 1
                 result.SuccessCount++;
             }
             catch (Exception ex)
@@ -59,10 +59,16 @@ public sealed class CodeImportService
             }
         }
 
-        // Seed all code series at once
-        if (seriesToSeed.Count > 0)
+        if (codeSeriesData.Count > 0)
         {
-            await codeSeriesRepository.SeedNextNumbersAsync(seriesToSeed, cancellationToken);
+            try
+            {
+                await codeSeriesRepository.SeedNextNumbersAsync(codeSeriesData, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                result.AddError($"Failed to save codes to database: {ex.Message}");
+            }
         }
 
         return result;

@@ -22,6 +22,7 @@ namespace DocControl
         private readonly RecommendationService? recommendationService;
         private readonly DocumentRepository? documentRepository;
         private readonly CodeImportService? codeImportService;
+        private readonly CodeSeriesRepository? codeSeriesRepository;
         private int? lastSuggested;
         private CodeSeriesKey? lastSuggestedKey;
         private int auditPage = 1;
@@ -33,7 +34,7 @@ namespace DocControl
             InitializeComponent();
         }
 
-        public Form1(DocumentService documentService, ImportService importService, NlqService nlqService, ConfigService configService, DocumentConfig documentConfig, AiSettings aiSettings, AiClientOptions aiOptions, AuditRepository auditRepository, RecommendationService recommendationService, DocumentRepository documentRepository, CodeImportService codeImportService)
+        public Form1(DocumentService documentService, ImportService importService, NlqService nlqService, ConfigService configService, DocumentConfig documentConfig, AiSettings aiSettings, AiClientOptions aiOptions, AuditRepository auditRepository, RecommendationService recommendationService, DocumentRepository documentRepository, CodeImportService codeImportService, CodeSeriesRepository codeSeriesRepository)
             : this()
         {
             this.documentService = documentService;
@@ -47,9 +48,166 @@ namespace DocControl
             this.recommendationService = recommendationService;
             this.documentRepository = documentRepository;
             this.codeImportService = codeImportService;
+            this.codeSeriesRepository = codeSeriesRepository;
 
             LoadSettingsToUi();
             AddCodeImportButton();
+            LoadCodesAsync();
+        }
+
+        private async void LoadCodesAsync()
+        {
+            if (codeSeriesRepository is null) return;
+
+            try
+            {
+                await PopulateLevel1CodesAsync();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to load codes: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+
+        private async Task PopulateLevel1CodesAsync()
+        {
+            if (codeSeriesRepository is null) return;
+
+            var codes = await codeSeriesRepository.GetLevel1CodesAsync();
+            cmbLevel1.Items.Clear();
+            cmbLevel1.Items.Add(""); // Add empty option for manual entry
+            foreach (var code in codes)
+            {
+                cmbLevel1.Items.Add(code);
+            }
+        }
+
+        private async void cmbLevel1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (codeSeriesRepository is null) return;
+
+            var selectedLevel1 = string.IsNullOrWhiteSpace(cmbLevel1.Text) ? null : cmbLevel1.Text.Trim();
+            
+            // Clear and repopulate Level2
+            var level2Codes = await codeSeriesRepository.GetLevel2CodesAsync(selectedLevel1);
+            cmbLevel2.Items.Clear();
+            cmbLevel2.Items.Add(""); // Add empty option
+            foreach (var code in level2Codes)
+            {
+                cmbLevel2.Items.Add(code);
+            }
+
+            // Clear dependent levels
+            cmbLevel3.Items.Clear();
+            cmbLevel3.Items.Add("");
+            cmbLevel4.Items.Clear();
+            cmbLevel4.Items.Add("");
+        }
+
+        private async void cmbLevel2_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (codeSeriesRepository is null) return;
+
+            var selectedLevel1 = string.IsNullOrWhiteSpace(cmbLevel1.Text) ? null : cmbLevel1.Text.Trim();
+            var selectedLevel2 = string.IsNullOrWhiteSpace(cmbLevel2.Text) ? null : cmbLevel2.Text.Trim();
+            
+            // Clear and repopulate Level3
+            var level3Codes = await codeSeriesRepository.GetLevel3CodesAsync(selectedLevel1, selectedLevel2);
+            cmbLevel3.Items.Clear();
+            cmbLevel3.Items.Add(""); // Add empty option
+            foreach (var code in level3Codes)
+            {
+                cmbLevel3.Items.Add(code);
+            }
+
+            // Clear dependent level
+            cmbLevel4.Items.Clear();
+            cmbLevel4.Items.Add("");
+        }
+
+        private async void cmbLevel3_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (codeSeriesRepository is null || !chkEnableLevel4.Checked) return;
+
+            var selectedLevel1 = string.IsNullOrWhiteSpace(cmbLevel1.Text) ? null : cmbLevel1.Text.Trim();
+            var selectedLevel2 = string.IsNullOrWhiteSpace(cmbLevel2.Text) ? null : cmbLevel2.Text.Trim();
+            var selectedLevel3 = string.IsNullOrWhiteSpace(cmbLevel3.Text) ? null : cmbLevel3.Text.Trim();
+            
+            // Clear and repopulate Level4
+            var level4Codes = await codeSeriesRepository.GetLevel4CodesAsync(selectedLevel1, selectedLevel2, selectedLevel3);
+            cmbLevel4.Items.Clear();
+            cmbLevel4.Items.Add(""); // Add empty option
+            foreach (var code in level4Codes)
+            {
+                cmbLevel4.Items.Add(code);
+            }
+        }
+
+        private async void cmbLevel1_TextChanged(object sender, EventArgs e)
+        {
+            // Debounce to avoid too many database calls
+            await Task.Delay(300);
+            if (codeSeriesRepository is null) return;
+
+            var selectedLevel1 = string.IsNullOrWhiteSpace(cmbLevel1.Text) ? null : cmbLevel1.Text.Trim();
+            
+            // Clear and repopulate Level2
+            var level2Codes = await codeSeriesRepository.GetLevel2CodesAsync(selectedLevel1);
+            cmbLevel2.Items.Clear();
+            cmbLevel2.Items.Add(""); // Add empty option
+            foreach (var code in level2Codes)
+            {
+                cmbLevel2.Items.Add(code);
+            }
+
+            // Clear dependent levels
+            cmbLevel3.Items.Clear();
+            cmbLevel3.Items.Add("");
+            cmbLevel4.Items.Clear();
+            cmbLevel4.Items.Add("");
+        }
+
+        private async void cmbLevel2_TextChanged(object sender, EventArgs e)
+        {
+            // Debounce to avoid too many database calls
+            await Task.Delay(300);
+            if (codeSeriesRepository is null) return;
+
+            var selectedLevel1 = string.IsNullOrWhiteSpace(cmbLevel1.Text) ? null : cmbLevel1.Text.Trim();
+            var selectedLevel2 = string.IsNullOrWhiteSpace(cmbLevel2.Text) ? null : cmbLevel2.Text.Trim();
+            
+            // Clear and repopulate Level3
+            var level3Codes = await codeSeriesRepository.GetLevel3CodesAsync(selectedLevel1, selectedLevel2);
+            cmbLevel3.Items.Clear();
+            cmbLevel3.Items.Add(""); // Add empty option
+            foreach (var code in level3Codes)
+            {
+                cmbLevel3.Items.Add(code);
+            }
+
+            // Clear dependent level
+            cmbLevel4.Items.Clear();
+            cmbLevel4.Items.Add("");
+        }
+
+        private async void cmbLevel3_TextChanged(object sender, EventArgs e)
+        {
+            // Debounce to avoid too many database calls
+            await Task.Delay(300);
+            if (codeSeriesRepository is null || !chkEnableLevel4.Checked) return;
+
+            var selectedLevel1 = string.IsNullOrWhiteSpace(cmbLevel1.Text) ? null : cmbLevel1.Text.Trim();
+            var selectedLevel2 = string.IsNullOrWhiteSpace(cmbLevel2.Text) ? null : cmbLevel2.Text.Trim();
+            var selectedLevel3 = string.IsNullOrWhiteSpace(cmbLevel3.Text) ? null : cmbLevel3.Text.Trim();
+            
+            // Clear and repopulate Level4
+            var level4Codes = await codeSeriesRepository.GetLevel4CodesAsync(selectedLevel1, selectedLevel2, selectedLevel3);
+            cmbLevel4.Items.Clear();
+            cmbLevel4.Items.Add(""); // Add empty option
+            foreach (var code in level4Codes)
+            {
+                cmbLevel4.Items.Add(code);
+            }
         }
 
         private void AddCodeImportButton()
@@ -67,7 +225,7 @@ namespace DocControl
             tabImport.Controls.Add(btnImportCodes);
         }
 
-        private void BtnImportCodes_Click(object? sender, EventArgs e)
+        private async void BtnImportCodes_Click(object? sender, EventArgs e)
         {
             if (codeImportService is null)
             {
@@ -79,6 +237,67 @@ namespace DocControl
             if (importForm.ShowDialog(this) == DialogResult.OK)
             {
                 MessageBox.Show("Codes imported successfully. You can now use them in document generation.", "Import Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                
+                // Refresh ALL combo boxes with new data
+                await PopulateLevel1CodesAsync();
+                await PopulateLevel2CodesAsync();
+                await PopulateLevel3CodesAsync();
+                
+                // Show debug info
+                await ShowDebugInfo();
+            }
+        }
+
+        private async Task PopulateLevel2CodesAsync()
+        {
+            if (codeSeriesRepository is null) return;
+
+            var codes = await codeSeriesRepository.GetLevel2CodesAsync(null);
+            cmbLevel2.Items.Clear();
+            cmbLevel2.Items.Add(""); // Add empty option
+            foreach (var code in codes)
+            {
+                cmbLevel2.Items.Add(code);
+            }
+        }
+
+        private async Task PopulateLevel3CodesAsync()
+        {
+            if (codeSeriesRepository is null) return;
+
+            var codes = await codeSeriesRepository.GetLevel3CodesAsync(null, null);
+            cmbLevel3.Items.Clear();
+            cmbLevel3.Items.Add(""); // Add empty option
+            foreach (var code in codes)
+            {
+                cmbLevel3.Items.Add(code);
+            }
+        }
+
+        private async Task ShowDebugInfo()
+        {
+            if (codeSeriesRepository is null) return;
+
+            try
+            {
+                var level1Codes = await codeSeriesRepository.GetLevel1CodesAsync();
+                var level2Codes = await codeSeriesRepository.GetLevel2CodesAsync(null);
+                var level3Codes = await codeSeriesRepository.GetLevel3CodesAsync(null, null);
+
+                var debugMessage = $"Database Query Results:\n\n" +
+                                   $"Level 1 Codes ({level1Codes.Count}): {string.Join(", ", level1Codes)}\n\n" +
+                                   $"Level 2 Codes ({level2Codes.Count}): {string.Join(", ", level2Codes)}\n\n" +
+                                   $"Level 3 Codes ({level3Codes.Count}): {string.Join(", ", level3Codes)}\n\n" +
+                                   $"ComboBox Items:\n" +
+                                   $"Level1 ComboBox: {cmbLevel1.Items.Count} items\n" +
+                                   $"Level2 ComboBox: {cmbLevel2.Items.Count} items\n" +
+                                   $"Level3 ComboBox: {cmbLevel3.Items.Count} items";
+
+                MessageBox.Show(debugMessage, "Debug Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Debug error: {ex.Message}", "Debug Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -86,17 +305,22 @@ namespace DocControl
 
         private bool ValidateLevels(out string message)
         {
-            if (string.IsNullOrWhiteSpace(txtLevel1.Text) || string.IsNullOrWhiteSpace(txtLevel2.Text) || string.IsNullOrWhiteSpace(txtLevel3.Text))
+            var level1 = cmbLevel1.Text?.Trim();
+            var level2 = cmbLevel2.Text?.Trim();
+            var level3 = cmbLevel3.Text?.Trim();
+            var level4 = cmbLevel4.Text?.Trim();
+
+            if (string.IsNullOrWhiteSpace(level1) || string.IsNullOrWhiteSpace(level2) || string.IsNullOrWhiteSpace(level3))
             {
                 message = "Level1-3 are required.";
                 return false;
             }
-            if (!IsAlphanumeric(txtLevel1.Text) || !IsAlphanumeric(txtLevel2.Text) || !IsAlphanumeric(txtLevel3.Text) || (chkEnableLevel4.Checked && !string.IsNullOrWhiteSpace(txtLevel4.Text) && !IsAlphanumeric(txtLevel4.Text)))
+            if (!IsAlphanumeric(level1) || !IsAlphanumeric(level2) || !IsAlphanumeric(level3) || (chkEnableLevel4.Checked && !string.IsNullOrWhiteSpace(level4) && !IsAlphanumeric(level4)))
             {
                 message = "Levels must be alphanumeric (A-Z, 0-9, _ or -).";
                 return false;
             }
-            if (chkEnableLevel4.Checked && string.IsNullOrWhiteSpace(txtLevel4.Text))
+            if (chkEnableLevel4.Checked && string.IsNullOrWhiteSpace(level4))
             {
                 message = "Level4 is enabled but empty.";
                 return false;
@@ -112,10 +336,10 @@ namespace DocControl
 
             var key = new CodeSeriesKey
             {
-                Level1 = txtLevel1.Text.Trim(),
-                Level2 = txtLevel2.Text.Trim(),
-                Level3 = txtLevel3.Text.Trim(),
-                Level4 = chkEnableLevel4.Checked ? txtLevel4.Text.Trim() : null
+                Level1 = cmbLevel1.Text?.Trim() ?? "",
+                Level2 = cmbLevel2.Text?.Trim() ?? "",
+                Level3 = cmbLevel3.Text?.Trim() ?? "",
+                Level4 = chkEnableLevel4.Checked ? cmbLevel4.Text?.Trim() : null
             };
 
             var freeText = txtFreeText.Text.Trim();
@@ -202,10 +426,10 @@ namespace DocControl
 
             var key = new CodeSeriesKey
             {
-                Level1 = txtLevel1.Text.Trim(),
-                Level2 = txtLevel2.Text.Trim(),
-                Level3 = txtLevel3.Text.Trim(),
-                Level4 = chkEnableLevel4.Checked ? txtLevel4.Text.Trim() : null
+                Level1 = cmbLevel1.Text?.Trim() ?? "",
+                Level2 = cmbLevel2.Text?.Trim() ?? "",
+                Level3 = cmbLevel3.Text?.Trim() ?? "",
+                Level4 = chkEnableLevel4.Checked ? cmbLevel4.Text?.Trim() : null
             };
 
             var rec = await recommendationService.RecommendAsync(key);
@@ -243,10 +467,10 @@ namespace DocControl
 
             var key = lastSuggestedKey ?? new CodeSeriesKey
             {
-                Level1 = txtLevel1.Text.Trim(),
-                Level2 = txtLevel2.Text.Trim(),
-                Level3 = txtLevel3.Text.Trim(),
-                Level4 = chkEnableLevel4.Checked ? txtLevel4.Text.Trim() : null
+                Level1 = cmbLevel1.Text?.Trim() ?? "",
+                Level2 = cmbLevel2.Text?.Trim() ?? "",
+                Level3 = cmbLevel3.Text?.Trim() ?? "",
+                Level4 = chkEnableLevel4.Checked ? cmbLevel4.Text?.Trim() : null
             };
             var freeText = txtFreeText.Text.Trim();
             var ext = txtExtension.Text.Trim();
@@ -356,10 +580,10 @@ namespace DocControl
 
         private void chkEnableLevel4_CheckedChanged(object sender, EventArgs e)
         {
-            txtLevel4.Enabled = chkEnableLevel4.Checked;
+            cmbLevel4.Enabled = chkEnableLevel4.Checked;
             if (!chkEnableLevel4.Checked)
             {
-                txtLevel4.Text = string.Empty;
+                cmbLevel4.SelectedIndex = -1;
             }
         }
 
@@ -451,6 +675,43 @@ namespace DocControl
             if (lvDocs.SelectedItems[0].Tag is not DocumentRecord doc) return;
             var level4 = string.IsNullOrWhiteSpace(doc.Level4) ? string.Empty : $"{documentConfig?.Separator}{doc.Level4}";
             MessageBox.Show($"DocId: {doc.Id}\nCode: {doc.Level1}{documentConfig?.Separator}{doc.Level2}{documentConfig?.Separator}{doc.Level3}{level4}{documentConfig?.Separator}{doc.Number}\nFile: {doc.FileName}\nBy: {doc.CreatedBy}\nAt: {doc.CreatedAtUtc.ToLocalTime():g}");
+        }
+
+        private async Task ShowDatabaseContents()
+        {
+            if (codeSeriesRepository is null) return;
+
+            try
+            {
+                // Use the repository methods instead of direct database access
+                var level1Codes = await codeSeriesRepository.GetLevel1CodesAsync();
+                var level2Codes = await codeSeriesRepository.GetLevel2CodesAsync(null);
+                var level3Codes = await codeSeriesRepository.GetLevel3CodesAsync(null, null);
+                
+                var results = new List<string>();
+                
+                foreach (var code in level1Codes)
+                {
+                    results.Add($"Level1: '{code}'");
+                }
+                
+                foreach (var code in level2Codes)
+                {
+                    results.Add($"Level2: '{code}'");
+                }
+                
+                foreach (var code in level3Codes)
+                {
+                    results.Add($"Level3: '{code}'");
+                }
+                
+                var message = "Database Contents via Repository:\n\n" + string.Join("\n", results);
+                MessageBox.Show(message, "Database Contents", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Database check error: {ex.Message}", "Database Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
     }
 }

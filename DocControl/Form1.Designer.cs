@@ -39,13 +39,13 @@ namespace DocControl
             txtFreeText = new TextBox();
             label6 = new Label();
             chkEnableLevel4 = new CheckBox();
-            txtLevel4 = new TextBox();
+            cmbLevel4 = new ComboBox();
             label5 = new Label();
-            txtLevel3 = new TextBox();
+            cmbLevel3 = new ComboBox();
             label4 = new Label();
-            txtLevel2 = new TextBox();
+            cmbLevel2 = new ComboBox();
             label3 = new Label();
-            txtLevel1 = new TextBox();
+            cmbLevel1 = new ComboBox();
             label2 = new Label();
             tabImport = new TabPage();
             lblImportResult = new Label();
@@ -151,13 +151,13 @@ namespace DocControl
             tabGenerate.Controls.Add(txtFreeText);
             tabGenerate.Controls.Add(label6);
             tabGenerate.Controls.Add(chkEnableLevel4);
-            tabGenerate.Controls.Add(txtLevel4);
+            tabGenerate.Controls.Add(cmbLevel4);
             tabGenerate.Controls.Add(label5);
-            tabGenerate.Controls.Add(txtLevel3);
+            tabGenerate.Controls.Add(cmbLevel3);
             tabGenerate.Controls.Add(label4);
-            tabGenerate.Controls.Add(txtLevel2);
+            tabGenerate.Controls.Add(cmbLevel2);
             tabGenerate.Controls.Add(label3);
-            tabGenerate.Controls.Add(txtLevel1);
+            tabGenerate.Controls.Add(cmbLevel1);
             tabGenerate.Controls.Add(label2);
             tabGenerate.Controls.Add(lblNoDelete);
             tabGenerate.Location = new Point(4, 24);
@@ -229,12 +229,14 @@ namespace DocControl
             chkEnableLevel4.UseVisualStyleBackColor = true;
             chkEnableLevel4.CheckedChanged += chkEnableLevel4_CheckedChanged;
             // 
-            // txtLevel4
+            // cmbLevel4
             // 
-            txtLevel4.Location = new Point(352, 96);
-            txtLevel4.Name = "txtLevel4";
-            txtLevel4.Size = new Size(152, 23);
-            txtLevel4.TabIndex = 7;
+            cmbLevel4.DropDownStyle = ComboBoxStyle.DropDown;
+            cmbLevel4.FormattingEnabled = true;
+            cmbLevel4.Location = new Point(352, 96);
+            cmbLevel4.Name = "cmbLevel4";
+            cmbLevel4.Size = new Size(152, 23);
+            cmbLevel4.TabIndex = 7;
             // 
             // label5
             // 
@@ -245,12 +247,16 @@ namespace DocControl
             label5.TabIndex = 6;
             label5.Text = "Level4";
             // 
-            // txtLevel3
+            // cmbLevel3
             // 
-            txtLevel3.Location = new Point(104, 96);
-            txtLevel3.Name = "txtLevel3";
-            txtLevel3.Size = new Size(152, 23);
-            txtLevel3.TabIndex = 5;
+            cmbLevel3.DropDownStyle = ComboBoxStyle.DropDown;
+            cmbLevel3.FormattingEnabled = true;
+            cmbLevel3.Location = new Point(104, 96);
+            cmbLevel3.Name = "cmbLevel3";
+            cmbLevel3.Size = new Size(152, 23);
+            cmbLevel3.TabIndex = 5;
+            cmbLevel3.SelectedIndexChanged += cmbLevel3_SelectedIndexChanged;
+            cmbLevel3.TextChanged += cmbLevel3_TextChanged;
             // 
             // label4
             // 
@@ -261,12 +267,16 @@ namespace DocControl
             label4.TabIndex = 4;
             label4.Text = "Level3";
             // 
-            // txtLevel2
+            // cmbLevel2
             // 
-            txtLevel2.Location = new Point(352, 57);
-            txtLevel2.Name = "txtLevel2";
-            txtLevel2.Size = new Size(152, 23);
-            txtLevel2.TabIndex = 3;
+            cmbLevel2.DropDownStyle = ComboBoxStyle.DropDown;
+            cmbLevel2.FormattingEnabled = true;
+            cmbLevel2.Location = new Point(352, 57);
+            cmbLevel2.Name = "cmbLevel2";
+            cmbLevel2.Size = new Size(152, 23);
+            cmbLevel2.TabIndex = 3;
+            cmbLevel2.SelectedIndexChanged += cmbLevel2_SelectedIndexChanged;
+            cmbLevel2.TextChanged += cmbLevel2_TextChanged;
             // 
             // label3
             // 
@@ -277,12 +287,16 @@ namespace DocControl
             label3.TabIndex = 2;
             label3.Text = "Level2";
             // 
-            // txtLevel1
+            // cmbLevel1
             // 
-            txtLevel1.Location = new Point(104, 57);
-            txtLevel1.Name = "txtLevel1";
-            txtLevel1.Size = new Size(152, 23);
-            txtLevel1.TabIndex = 1;
+            cmbLevel1.DropDownStyle = ComboBoxStyle.DropDown;
+            cmbLevel1.FormattingEnabled = true;
+            cmbLevel1.Location = new Point(104, 57);
+            cmbLevel1.Name = "cmbLevel1";
+            cmbLevel1.Size = new Size(152, 23);
+            cmbLevel1.TabIndex = 1;
+            cmbLevel1.SelectedIndexChanged += cmbLevel1_SelectedIndexChanged;
+            cmbLevel1.TextChanged += cmbLevel1_TextChanged;
             // 
             // label2
             // 
@@ -904,12 +918,12 @@ namespace DocControl
         private TabPage tabRecommend;
         private TabPage tabSettings;
         private Label label2;
-        private TextBox txtLevel1;
-        private TextBox txtLevel3;
+        private ComboBox cmbLevel1;
+        private ComboBox cmbLevel3;
         private Label label4;
-        private TextBox txtLevel2;
+        private ComboBox cmbLevel2;
         private Label label3;
-        private TextBox txtLevel4;
+        private ComboBox cmbLevel4;
         private Label label5;
         private CheckBox chkEnableLevel4;
         private TextBox txtFreeText;

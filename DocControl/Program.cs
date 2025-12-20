@@ -65,7 +65,8 @@ namespace DocControl
                 provider.GetRequiredService<AuditRepository>(),
                 provider.GetRequiredService<RecommendationService>(),
                 provider.GetRequiredService<DocumentRepository>(),
-                provider.GetRequiredService<CodeImportService>()
+                provider.GetRequiredService<CodeImportService>(),
+                provider.GetRequiredService<CodeSeriesRepository>()
             ));
 
             using var provider = services.BuildServiceProvider();
