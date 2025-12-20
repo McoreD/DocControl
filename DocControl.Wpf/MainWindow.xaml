@@ -315,10 +315,26 @@
                 <ListView Grid.Row="4" Name="lvDocs" MouseDoubleClick="lvDocs_DoubleClick">
                     <ListView.View>
                         <GridView>
-                            <GridViewColumn Header="Code" Width="250" DisplayMemberBinding="{Binding Code}"/>
-                            <GridViewColumn Header="File Name" Width="250" DisplayMemberBinding="{Binding FileName}"/>
-                            <GridViewColumn Header="Created By" Width="100" DisplayMemberBinding="{Binding CreatedBy}"/>
-                            <GridViewColumn Header="Created At" Width="150" DisplayMemberBinding="{Binding CreatedAt}"/>
+                            <GridViewColumn Width="250" DisplayMemberBinding="{Binding Code}">
+                                <GridViewColumn.Header>
+                                    <GridViewColumnHeader Content="Code" Click="lvDocsColumnHeader_Click" Tag="Code"/>
+                                </GridViewColumn.Header>
+                            </GridViewColumn>
+                            <GridViewColumn Width="250" DisplayMemberBinding="{Binding FileName}">
+                                <GridViewColumn.Header>
+                                    <GridViewColumnHeader Content="File Name" Click="lvDocsColumnHeader_Click" Tag="FileName"/>
+                                </GridViewColumn.Header>
+                            </GridViewColumn>
+                            <GridViewColumn Width="100" DisplayMemberBinding="{Binding CreatedBy}">
+                                <GridViewColumn.Header>
+                                    <GridViewColumnHeader Content="Created By" Click="lvDocsColumnHeader_Click" Tag="CreatedBy"/>
+                                </GridViewColumn.Header>
+                            </GridViewColumn>
+                            <GridViewColumn Width="150" DisplayMemberBinding="{Binding CreatedAt}">
+                                <GridViewColumn.Header>
+                                    <GridViewColumnHeader Content="Created At" Click="lvDocsColumnHeader_Click" Tag="CreatedAt"/>
+                                </GridViewColumn.Header>
+                            </GridViewColumn>
                         </GridView>
                     </ListView.View>
                 </ListView>

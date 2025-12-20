@@ -8,6 +8,8 @@ using DocControl.Core.Models;
 using DocControl.Infrastructure.Presentation;
 using DocControl.Infrastructure.Services;
 using Microsoft.Win32;
+using System.ComponentModel;
+using System.Windows.Data;
 
 namespace DocControl.Wpf
 {
@@ -23,6 +25,8 @@ namespace DocControl.Wpf
         private string? auditFilterUser;
         private string? auditFilterAction;
         private bool isPopulatingDropdowns = false;
+        private GridViewColumnHeader? _lastDocsColumnHeader = null;
+        private ListSortDirection _lastDocsDirection = ListSortDirection.Ascending;
 
         public MainWindow(MainController controller, DocumentConfig documentConfig, AiSettings aiSettings, AiClientOptions aiOptions)
         {
@@ -533,6 +537,70 @@ namespace DocControl.Wpf
         private async void btnDocsFilter_Click(object sender, RoutedEventArgs e)
         {
             await LoadDocsAsync();
+        }
+
+        private void lvDocsColumnHeader_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not GridViewColumnHeader headerClicked)
+                return;
+
+            if (headerClicked.Role == GridViewColumnHeaderRole.Padding)
+                return;
+
+            ListSortDirection direction;
+
+            if (headerClicked != _lastDocsColumnHeader)
+            {
+                direction = ListSortDirection.Ascending;
+            }
+            else
+            {
+                direction = _lastDocsDirection == ListSortDirection.Ascending
+                    ? ListSortDirection.Descending
+                    : ListSortDirection.Ascending;
+            }
+
+            var columnBinding = headerClicked.Tag as string;
+            if (string.IsNullOrEmpty(columnBinding))
+                return;
+
+            Sort(columnBinding, direction, lvDocs);
+
+            // Remove arrow from previously sorted header
+            if (_lastDocsColumnHeader != null && _lastDocsColumnHeader != headerClicked)
+            {
+                _lastDocsColumnHeader.Column.HeaderTemplate = null;
+            }
+
+            // Update arrow on current header
+            if (direction == ListSortDirection.Ascending)
+            {
+                headerClicked.Content = $"{headerClicked.Tag} ▲";
+            }
+            else
+            {
+                headerClicked.Content = $"{headerClicked.Tag} ▼";
+            }
+
+            // Remove arrow from previous header if different
+            if (_lastDocsColumnHeader != null && _lastDocsColumnHeader != headerClicked)
+            {
+                var previousTag = _lastDocsColumnHeader.Tag as string;
+                _lastDocsColumnHeader.Content = previousTag;
+            }
+
+            _lastDocsColumnHeader = headerClicked;
+            _lastDocsDirection = direction;
+        }
+
+        private void Sort(string sortBy, ListSortDirection direction, ListView listView)
+        {
+            ICollectionView dataView = CollectionViewSource.GetDefaultView(listView.Items);
+
+            dataView.SortDescriptions.Clear();
+            SortDescription sd = new SortDescription(sortBy, direction);
+            dataView.SortDescriptions.Add(sd);
+            dataView.Refresh();
         }
 
         private void lvDocs_DoubleClick(object sender, MouseButtonEventArgs e)
