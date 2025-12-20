@@ -1,29 +1,19 @@
 using System.IO;
-using System.Text.RegularExpressions;
 using DocControl.AI;
 using DocControl.Configuration;
-using DocControl.Data;
 using DocControl.Forms;
 using DocControl.Models;
+using DocControl.Presentation;
 using DocControl.Services;
 
 namespace DocControl
 {
     public partial class Form1
     {
-        private readonly DocumentService? documentService;
-        private readonly ImportService? importService;
-        private readonly NlqService? nlqService;
-        private readonly ConfigService? configService;
-        private readonly DocumentConfig? documentConfig;
-        private readonly AiSettings? aiSettings;
-        private readonly AiClientOptions? aiOptions;
-        private readonly AuditRepository? auditRepository;
-        private readonly RecommendationService? recommendationService;
-        private readonly DocumentRepository? documentRepository;
-        private readonly CodeImportService? codeImportService;
-        private readonly CodeSeriesRepository? codeSeriesRepository;
-        private readonly DocumentImportService? documentImportService;
+        private readonly MainController controller = null!;
+        private readonly DocumentConfig documentConfig = null!;
+        private readonly AiSettings aiSettings = null!;
+        private readonly AiClientOptions aiOptions = null!;
         private int? lastSuggested;
         private CodeSeriesKey? lastSuggestedKey;
         private int auditPage = 1;
@@ -35,22 +25,13 @@ namespace DocControl
             InitializeComponent();
         }
 
-        public Form1(DocumentService documentService, ImportService importService, NlqService nlqService, ConfigService configService, DocumentConfig documentConfig, AiSettings aiSettings, AiClientOptions aiOptions, AuditRepository auditRepository, RecommendationService recommendationService, DocumentRepository documentRepository, CodeImportService codeImportService, CodeSeriesRepository codeSeriesRepository, DocumentImportService documentImportService)
+        public Form1(MainController controller, DocumentConfig documentConfig, AiSettings aiSettings, AiClientOptions aiOptions)
             : this()
         {
-            this.documentService = documentService;
-            this.importService = importService;
-            this.nlqService = nlqService;
-            this.configService = configService;
+            this.controller = controller;
             this.documentConfig = documentConfig;
             this.aiSettings = aiSettings;
             this.aiOptions = aiOptions;
-            this.auditRepository = auditRepository;
-            this.recommendationService = recommendationService;
-            this.documentRepository = documentRepository;
-            this.codeImportService = codeImportService;
-            this.codeSeriesRepository = codeSeriesRepository;
-            this.documentImportService = documentImportService;
 
             LoadSettingsToUi();
             AddCodeImportButton();
@@ -59,13 +40,16 @@ namespace DocControl
 
         private async void LoadCodesAsync()
         {
-            if (codeSeriesRepository is null) return;
-
             try
             {
                 await PopulateLevel1CodesAsync();
                 await PopulateLevel2CodesAsync();
                 await PopulateLevel3CodesAsync();
+
+                if (chkEnableLevel4.Checked)
+                {
+                    await PopulateLevel4CodesAsync();
+                }
             }
             catch (Exception ex)
             {
@@ -75,11 +59,9 @@ namespace DocControl
 
         private async Task PopulateLevel1CodesAsync()
         {
-            if (codeSeriesRepository is null) return;
-
-            var codes = await codeSeriesRepository.GetLevel1CodesAsync();
+            var codes = await controller.GetLevel1CodesAsync().ConfigureAwait(true);
             cmbLevel1.Items.Clear();
-            cmbLevel1.Items.Add("");
+            cmbLevel1.Items.Add(string.Empty);
             foreach (var code in codes)
             {
                 cmbLevel1.Items.Add(code);
@@ -88,108 +70,83 @@ namespace DocControl
 
         private async void cmbLevel1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (codeSeriesRepository is null) return;
-
-            var level2Codes = await codeSeriesRepository.GetLevel2CodesAsync(null);
-            cmbLevel2.Items.Clear();
-            cmbLevel2.Items.Add("");
-            foreach (var code in level2Codes)
-            {
-                cmbLevel2.Items.Add(code);
-            }
-
-            var level3Codes = await codeSeriesRepository.GetLevel3CodesAsync(null, null);
-            cmbLevel3.Items.Clear();
-            cmbLevel3.Items.Add("");
-            foreach (var code in level3Codes)
-            {
-                cmbLevel3.Items.Add(code);
-            }
-
+            await PopulateLevel2CodesAsync();
+            await PopulateLevel3CodesAsync();
             cmbLevel4.Items.Clear();
-            cmbLevel4.Items.Add("");
+            cmbLevel4.Items.Add(string.Empty);
         }
 
         private async void cmbLevel2_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (codeSeriesRepository is null) return;
-
-            var level3Codes = await codeSeriesRepository.GetLevel3CodesAsync(null, null);
-            cmbLevel3.Items.Clear();
-            cmbLevel3.Items.Add("");
-            foreach (var code in level3Codes)
-            {
-                cmbLevel3.Items.Add(code);
-            }
-
+            await PopulateLevel3CodesAsync();
             cmbLevel4.Items.Clear();
-            cmbLevel4.Items.Add("");
+            cmbLevel4.Items.Add(string.Empty);
         }
 
         private async void cmbLevel3_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (codeSeriesRepository is null || !chkEnableLevel4.Checked) return;
-
-            var level4Codes = await codeSeriesRepository.GetLevel4CodesAsync(null, null, null);
-            cmbLevel4.Items.Clear();
-            cmbLevel4.Items.Add("");
-            foreach (var code in level4Codes)
-            {
-                cmbLevel4.Items.Add(code);
-            }
+            if (!chkEnableLevel4.Checked) return;
+            await PopulateLevel4CodesAsync();
         }
 
         private async void cmbLevel1_TextChanged(object sender, EventArgs e)
         {
             await Task.Delay(300);
-            if (codeSeriesRepository is null) return;
-
-            var level2Codes = await codeSeriesRepository.GetLevel2CodesAsync(null);
-            cmbLevel2.Items.Clear();
-            cmbLevel2.Items.Add("");
-            foreach (var code in level2Codes)
-            {
-                cmbLevel2.Items.Add(code);
-            }
-
-            var level3Codes = await codeSeriesRepository.GetLevel3CodesAsync(null, null);
-            cmbLevel3.Items.Clear();
-            cmbLevel3.Items.Add("");
-            foreach (var code in level3Codes)
-            {
-                cmbLevel3.Items.Add(code);
-            }
-
+            await PopulateLevel2CodesAsync();
+            await PopulateLevel3CodesAsync();
             cmbLevel4.Items.Clear();
-            cmbLevel4.Items.Add("");
+            cmbLevel4.Items.Add(string.Empty);
         }
 
         private async void cmbLevel2_TextChanged(object sender, EventArgs e)
         {
             await Task.Delay(300);
-            if (codeSeriesRepository is null) return;
-
-            var level3Codes = await codeSeriesRepository.GetLevel3CodesAsync(null, null);
-            cmbLevel3.Items.Clear();
-            cmbLevel3.Items.Add("");
-            foreach (var code in level3Codes)
-            {
-                cmbLevel3.Items.Add(code);
-            }
-
+            await PopulateLevel3CodesAsync();
             cmbLevel4.Items.Clear();
-            cmbLevel4.Items.Add("");
+            cmbLevel4.Items.Add(string.Empty);
         }
 
         private async void cmbLevel3_TextChanged(object sender, EventArgs e)
         {
             await Task.Delay(300);
-            if (codeSeriesRepository is null || !chkEnableLevel4.Checked) return;
+            if (!chkEnableLevel4.Checked) return;
+            await PopulateLevel4CodesAsync();
+        }
 
-            var level4Codes = await codeSeriesRepository.GetLevel4CodesAsync(null, null, null);
+        private async Task PopulateLevel2CodesAsync()
+        {
+            var level1 = cmbLevel1.Text?.Trim();
+            var codes = await controller.GetLevel2CodesAsync(level1, CancellationToken.None).ConfigureAwait(true);
+            cmbLevel2.Items.Clear();
+            cmbLevel2.Items.Add(string.Empty);
+            foreach (var code in codes)
+            {
+                cmbLevel2.Items.Add(code);
+            }
+        }
+
+        private async Task PopulateLevel3CodesAsync()
+        {
+            var level1 = cmbLevel1.Text?.Trim();
+            var level2 = cmbLevel2.Text?.Trim();
+            var codes = await controller.GetLevel3CodesAsync(level1, level2, CancellationToken.None).ConfigureAwait(true);
+            cmbLevel3.Items.Clear();
+            cmbLevel3.Items.Add(string.Empty);
+            foreach (var code in codes)
+            {
+                cmbLevel3.Items.Add(code);
+            }
+        }
+
+        private async Task PopulateLevel4CodesAsync()
+        {
+            var level1 = cmbLevel1.Text?.Trim();
+            var level2 = cmbLevel2.Text?.Trim();
+            var level3 = cmbLevel3.Text?.Trim();
+            var codes = await controller.GetLevel4CodesAsync(level1, level2, level3, CancellationToken.None).ConfigureAwait(true);
             cmbLevel4.Items.Clear();
-            cmbLevel4.Items.Add("");
-            foreach (var code in level4Codes)
+            cmbLevel4.Items.Add(string.Empty);
+            foreach (var code in codes)
             {
                 cmbLevel4.Items.Add(code);
             }
@@ -221,12 +178,6 @@ namespace DocControl
 
         private async void BtnClearDocuments_Click(object? sender, EventArgs e)
         {
-            if (documentRepository is null)
-            {
-                MessageBox.Show("Service unavailable");
-                return;
-            }
-
             var confirm = MessageBox.Show(
                 "This will delete ALL document entries (file names/history) and audit entries. Codes will NOT be deleted.\n\nContinue?",
                 "Confirm clear",
@@ -237,7 +188,7 @@ namespace DocControl
 
             try
             {
-                await documentRepository.ClearAllAsync();
+                await controller.ClearDocumentsAsync().ConfigureAwait(true);
 
                 lvDocs.Items.Clear();
                 lvAudit.Items.Clear();
@@ -256,96 +207,52 @@ namespace DocControl
 
         private async void BtnImportCodes_Click(object? sender, EventArgs e)
         {
-            if (codeImportService is null)
-            {
-                MessageBox.Show("Code import service unavailable");
-                return;
-            }
-
-            using var importForm = new CodeImportForm(codeImportService);
+            using var importForm = new CodeImportForm(controller);
             if (importForm.ShowDialog(this) == DialogResult.OK)
             {
                 MessageBox.Show("Codes imported successfully. You can now use them in document generation.", "Import Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                
+
                 await PopulateLevel1CodesAsync();
                 await PopulateLevel2CodesAsync();
                 await PopulateLevel3CodesAsync();
             }
         }
 
-        private async Task PopulateLevel2CodesAsync()
+        private CodeSeriesKey BuildKeyFromInputs()
         {
-            if (codeSeriesRepository is null) return;
-
-            var codes = await codeSeriesRepository.GetLevel2CodesAsync(null);
-            cmbLevel2.Items.Clear();
-            cmbLevel2.Items.Add("");
-            foreach (var code in codes)
+            return new CodeSeriesKey
             {
-                cmbLevel2.Items.Add(code);
-            }
+                Level1 = cmbLevel1.Text?.Trim() ?? string.Empty,
+                Level2 = cmbLevel2.Text?.Trim() ?? string.Empty,
+                Level3 = cmbLevel3.Text?.Trim() ?? string.Empty,
+                Level4 = chkEnableLevel4.Checked ? cmbLevel4.Text?.Trim() : null
+            };
         }
-
-        private async Task PopulateLevel3CodesAsync()
-        {
-            if (codeSeriesRepository is null) return;
-
-            var codes = await codeSeriesRepository.GetLevel3CodesAsync(null, null);
-            cmbLevel3.Items.Clear();
-            cmbLevel3.Items.Add("");
-            foreach (var code in codes)
-            {
-                cmbLevel3.Items.Add(code);
-            }
-        }
-
-        private static bool IsAlphanumeric(string value) => Regex.IsMatch(value, "^[A-Za-z0-9_-]+$");
 
         private bool ValidateLevels(out string message)
         {
-            var level1 = cmbLevel1.Text?.Trim();
-            var level2 = cmbLevel2.Text?.Trim();
-            var level3 = cmbLevel3.Text?.Trim();
-            var level4 = cmbLevel4.Text?.Trim();
-
-            if (string.IsNullOrWhiteSpace(level1) || string.IsNullOrWhiteSpace(level2) || string.IsNullOrWhiteSpace(level3))
-            {
-                message = "Level1-3 are required.";
-                return false;
-            }
-            if (!IsAlphanumeric(level1) || !IsAlphanumeric(level2) || !IsAlphanumeric(level3) || (chkEnableLevel4.Checked && !string.IsNullOrWhiteSpace(level4) && !IsAlphanumeric(level4)))
-            {
-                message = "Levels must be alphanumeric (A-Z, 0-9, _ or -).";
-                return false;
-            }
-            if (chkEnableLevel4.Checked && string.IsNullOrWhiteSpace(level4))
-            {
-                message = "Level4 is enabled but empty.";
-                return false;
-            }
-            message = string.Empty;
-            return true;
+            var key = BuildKeyFromInputs();
+            var result = controller.ValidateLevels(key, chkEnableLevel4.Checked);
+            message = result.Message;
+            return result.IsValid;
         }
 
         private async void btnGenerate_Click(object sender, EventArgs e)
         {
-            if (documentService is null || documentConfig is null) { MessageBox.Show("Service unavailable"); return; }
-            if (!ValidateLevels(out var msg)) { MessageBox.Show(msg); return; }
-
-            var key = new CodeSeriesKey
+            if (!ValidateLevels(out var msg))
             {
-                Level1 = cmbLevel1.Text?.Trim() ?? "",
-                Level2 = cmbLevel2.Text?.Trim() ?? "",
-                Level3 = cmbLevel3.Text?.Trim() ?? "",
-                Level4 = chkEnableLevel4.Checked ? cmbLevel4.Text?.Trim() : null
-            };
+                MessageBox.Show(msg);
+                return;
+            }
+
+            var key = BuildKeyFromInputs();
 
             var freeText = txtFreeText.Text.Trim();
             var ext = txtExtension.Text.Trim();
 
             try
             {
-                var result = await documentService.CreateAsync(key, freeText, Environment.UserName, null, ext);
+                var result = await controller.GenerateDocumentAsync(key, freeText, Environment.UserName, ext).ConfigureAwait(true);
                 lblGenerateResult.Text = $"Created: {result.FileName} (audited)";
             }
             catch (Exception ex)
@@ -354,38 +261,8 @@ namespace DocControl
             }
         }
 
-        private void PopulateImportResults(ImportResult result)
-        {
-            lastSummaries = result.Summaries;
-            lblImportResult.Text = $"Valid: {result.Valid.Count}, Invalid: {result.Invalid.Count}";
-            lstImportInvalid.Items.Clear();
-            foreach (var invalid in result.Invalid)
-            {
-                lstImportInvalid.Items.Add($"{invalid.FileName} - {invalid.Reason}");
-            }
-
-            lvImportSummary.Items.Clear();
-            foreach (var s in result.Summaries)
-            {
-                var seriesText = documentConfig?.EnableLevel4 == true && s.SeriesKey.Level4 is not null
-                    ? $"{s.SeriesKey.Level1}{documentConfig.Separator}{s.SeriesKey.Level2}{documentConfig.Separator}{s.SeriesKey.Level3}{documentConfig.Separator}{s.SeriesKey.Level4}"
-                    : $"{s.SeriesKey.Level1}{documentConfig?.Separator}{s.SeriesKey.Level2}{documentConfig?.Separator}{s.SeriesKey.Level3}";
-                var item = new ListViewItem(seriesText) { Tag = s };
-                item.SubItems.Add(s.MaxNumber.ToString());
-                item.SubItems.Add(s.NextNumber.ToString());
-                lvImportSummary.Items.Add(item);
-            }
-        }
-
-        // Documents tab: import lines like "DFT-GOV-REG-001 DocControl"
         private async void btnImportCsv_Click(object sender, EventArgs e)
         {
-            if (documentRepository is null || codeSeriesRepository is null || documentImportService is null || documentConfig is null)
-            {
-                MessageBox.Show("Service unavailable");
-                return;
-            }
-
             using var dlg = new OpenFileDialog
             {
                 Filter = "CSV files|*.csv|Text files|*.txt|All files|*.*",
@@ -394,119 +271,47 @@ namespace DocControl
 
             if (dlg.ShowDialog() != DialogResult.OK) return;
 
-            var lines = await File.ReadAllLinesAsync(dlg.FileName);
-            var entries = documentImportService.ParseCodeAndFileLines(lines);
-
-            if (entries.Count == 0)
-            {
-                MessageBox.Show("No rows found.");
-                return;
-            }
-
-            var valid = 0;
-            var invalid = 0;
-            var errors = new List<string>();
-            var toSeed = new List<(CodeSeriesKey key, int maxNumber)>();
-            var toImport = new List<(CodeSeriesKey key, int number, string fileName)>();
-
-            foreach (var entry in entries)
-            {
-                if (!TryParseCodeOnly(entry.Code, out var key, out var number, out var reason))
-                {
-                    invalid++;
-                    errors.Add($"{entry.Code}: {reason}");
-                    continue;
-                }
-
-                valid++;
-                toSeed.Add((key, number));
-
-                var fileName = string.IsNullOrWhiteSpace(entry.FileName) ? entry.Code : entry.FileName;
-                toImport.Add((key, number, fileName));
-            }
-
-            if (toSeed.Count > 0)
-            {
-                await codeSeriesRepository.SeedNextNumbersAsync(toSeed);
-            }
-
-            foreach (var (key, number, fileName) in toImport)
-            {
-                await documentRepository.UpsertImportedAsync(key, number, fileName, Environment.UserName, DateTime.UtcNow);
-            }
+            var lines = await File.ReadAllLinesAsync(dlg.FileName).ConfigureAwait(true);
+            var outcome = await controller.ImportDocumentsAsync(lines, Environment.UserName).ConfigureAwait(true);
 
             await LoadDocsAsync();
 
-            var msg = $"Imported {valid} rows. Invalid: {invalid}.";
-            if (errors.Count > 0)
+            lblImportResult.Text = $"Valid: {outcome.ValidCount}, Invalid: {outcome.InvalidCount}";
+            lstImportInvalid.Items.Clear();
+            foreach (var error in outcome.Errors.Take(50))
             {
-                msg += "\n\nFirst errors:\n" + string.Join("\n", errors.Take(10));
-                if (errors.Count > 10) msg += $"\n...and {errors.Count - 10} more.";
+                lstImportInvalid.Items.Add(error);
+            }
+
+            lastSummaries = outcome.Summaries;
+            lvImportSummary.Items.Clear();
+            foreach (var s in outcome.Summaries)
+            {
+                var seriesText = documentConfig.EnableLevel4 && s.SeriesKey.Level4 is not null
+                    ? $"{s.SeriesKey.Level1}{documentConfig.Separator}{s.SeriesKey.Level2}{documentConfig.Separator}{s.SeriesKey.Level3}{documentConfig.Separator}{s.SeriesKey.Level4}"
+                    : $"{s.SeriesKey.Level1}{documentConfig.Separator}{s.SeriesKey.Level2}{documentConfig.Separator}{s.SeriesKey.Level3}";
+                var item = new ListViewItem(seriesText) { Tag = s };
+                item.SubItems.Add(s.MaxNumber.ToString());
+                item.SubItems.Add(s.NextNumber.ToString());
+                lvImportSummary.Items.Add(item);
+            }
+
+            var msg = $"Imported {outcome.ValidCount} rows. Invalid: {outcome.InvalidCount}.";
+            if (outcome.Errors.Count > 0)
+            {
+                msg += "\n\nFirst errors:\n" + string.Join("\n", outcome.Errors.Take(10));
+                if (outcome.Errors.Count > 10) msg += $"\n...and {outcome.Errors.Count - 10} more.";
             }
 
             MessageBox.Show(msg);
         }
 
-        private bool TryParseCodeOnly(string code, out CodeSeriesKey key, out int number, out string reason)
-        {
-            key = new CodeSeriesKey { Level1 = "", Level2 = "", Level3 = "", Level4 = null };
-            number = 0;
-            reason = string.Empty;
-
-            if (documentConfig is null)
-            {
-                reason = "No configuration";
-                return false;
-            }
-
-            if (string.IsNullOrWhiteSpace(code))
-            {
-                reason = "Empty code";
-                return false;
-            }
-
-            var parts = code.Trim().Split(documentConfig.Separator, StringSplitOptions.RemoveEmptyEntries);
-            if (documentConfig.EnableLevel4)
-            {
-                if (parts.Length != 5)
-                {
-                    reason = "Expected Level1-4 and number";
-                    return false;
-                }
-
-                if (!int.TryParse(parts[4], out number))
-                {
-                    reason = "Number not numeric";
-                    return false;
-                }
-
-                key = new CodeSeriesKey { Level1 = parts[0], Level2 = parts[1], Level3 = parts[2], Level4 = parts[3] };
-                return true;
-            }
-
-            if (parts.Length != 4)
-            {
-                reason = "Expected Level1-3 and number";
-                return false;
-            }
-
-            if (!int.TryParse(parts[3], out number))
-            {
-                reason = "Number not numeric";
-                return false;
-            }
-
-            key = new CodeSeriesKey { Level1 = parts[0], Level2 = parts[1], Level3 = parts[2], Level4 = null };
-            return true;
-        }
-
         private async void btnInterpret_Click(object sender, EventArgs e)
         {
-            if (nlqService is null) { MessageBox.Show("Service unavailable"); return; }
             var query = txtNlq.Text.Trim();
             if (string.IsNullOrWhiteSpace(query)) return;
 
-            var result = await nlqService.InterpretAsync(query);
+            var result = await controller.InterpretAsync(query).ConfigureAwait(true);
             if (result is null)
             {
                 txtNlqResult.Text = "No structured result.";
@@ -518,18 +323,15 @@ namespace DocControl
 
         private async void btnRecommend_Click(object sender, EventArgs e)
         {
-            if (recommendationService is null) { MessageBox.Show("Service unavailable"); return; }
-            if (!ValidateLevels(out var msg)) { MessageBox.Show(msg); return; }
-
-            var key = new CodeSeriesKey
+            if (!ValidateLevels(out var msg))
             {
-                Level1 = cmbLevel1.Text?.Trim() ?? "",
-                Level2 = cmbLevel2.Text?.Trim() ?? "",
-                Level3 = cmbLevel3.Text?.Trim() ?? "",
-                Level4 = chkEnableLevel4.Checked ? cmbLevel4.Text?.Trim() : null
-            };
+                MessageBox.Show(msg);
+                return;
+            }
 
-            var rec = await recommendationService.RecommendAsync(key);
+            var key = BuildKeyFromInputs();
+
+            var rec = await controller.RecommendAsync(key).ConfigureAwait(true);
             lastSuggested = rec.SuggestedNext;
             lastSuggestedKey = rec.SeriesKey;
             lblRecommendResult.Text = rec.IsExisting
@@ -539,7 +341,12 @@ namespace DocControl
 
         private async void btnUseSuggested_Click(object sender, EventArgs e)
         {
-            if (documentService is null || lastSuggestedKey is null || lastSuggested is null) { MessageBox.Show("No recommendation available."); return; }
+            if (lastSuggestedKey is null || lastSuggested is null)
+            {
+                MessageBox.Show("No recommendation available.");
+                return;
+            }
+
             var freeText = txtFreeText.Text.Trim();
             var ext = txtExtension.Text.Trim();
             var confirm = MessageBox.Show($"Create using suggested number (may adjust if already taken)?\nSeries: {lastSuggestedKey.Level1}-{lastSuggestedKey.Level2}-{lastSuggestedKey.Level3}-{lastSuggestedKey.Level4}\nSuggested: {lastSuggested}", "Confirm", MessageBoxButtons.YesNo);
@@ -547,7 +354,7 @@ namespace DocControl
 
             try
             {
-                var result = await documentService.CreateAsync(lastSuggestedKey, freeText, Environment.UserName, null, ext);
+                var result = await controller.GenerateDocumentAsync(lastSuggestedKey, freeText, Environment.UserName, ext).ConfigureAwait(true);
                 lblRecommendResult.Text = $"Created with number {result.Number} (suggested {lastSuggested}). File: {result.FileName}";
                 MessageBox.Show($"Created: {result.FileName} (number {result.Number})");
             }
@@ -559,22 +366,19 @@ namespace DocControl
 
         private async void btnCreateRecommended_Click(object sender, EventArgs e)
         {
-            if (documentService is null) { MessageBox.Show("Service unavailable"); return; }
-            if (!ValidateLevels(out var msg)) { MessageBox.Show(msg); return; }
-
-            var key = lastSuggestedKey ?? new CodeSeriesKey
+            if (!ValidateLevels(out var msg))
             {
-                Level1 = cmbLevel1.Text?.Trim() ?? "",
-                Level2 = cmbLevel2.Text?.Trim() ?? "",
-                Level3 = cmbLevel3.Text?.Trim() ?? "",
-                Level4 = chkEnableLevel4.Checked ? cmbLevel4.Text?.Trim() : null
-            };
+                MessageBox.Show(msg);
+                return;
+            }
+
+            var key = lastSuggestedKey ?? BuildKeyFromInputs();
             var freeText = txtFreeText.Text.Trim();
             var ext = txtExtension.Text.Trim();
 
             try
             {
-                var result = await documentService.CreateAsync(key, freeText, Environment.UserName, null, ext);
+                var result = await controller.GenerateDocumentAsync(key, freeText, Environment.UserName, ext).ConfigureAwait(true);
                 lblRecommendResult.Text = $"Created with allocator: {result.FileName} (number {result.Number})";
             }
             catch (Exception ex)
@@ -585,40 +389,33 @@ namespace DocControl
 
         private async void btnSaveSettings_Click(object sender, EventArgs e)
         {
-            if (configService is null || documentConfig is null || aiSettings is null || aiOptions is null) { MessageBox.Show("Service unavailable"); return; }
-            documentConfig.PaddingLength = (int)numPadding.Value;
-            documentConfig.Separator = txtSeparator.Text;
-            documentConfig.EnableLevel4 = chkSettingsEnableLevel4.Checked;
-            documentConfig.LevelCount = documentConfig.EnableLevel4 ? 4 : 3;
+            var provider = cmbProvider.SelectedItem?.ToString() == "Gemini" ? AiProvider.Gemini : AiProvider.OpenAi;
 
-            aiSettings.Provider = cmbProvider.SelectedItem?.ToString() == "Gemini" ? AI.AiProvider.Gemini : AI.AiProvider.OpenAi;
-            aiSettings.OpenAiModel = txtOpenAiModel.Text.Trim();
-            aiSettings.GeminiModel = txtGeminiModel.Text.Trim();
+            var state = new SettingsState(
+                (int)numPadding.Value,
+                txtSeparator.Text,
+                chkSettingsEnableLevel4.Checked,
+                provider,
+                txtOpenAiModel.Text.Trim(),
+                txtGeminiModel.Text.Trim());
 
-            var refreshed = await configService.BuildAiOptionsAsync(aiSettings);
-            aiOptions.DefaultProvider = refreshed.DefaultProvider;
-            aiOptions.OpenAi.ApiKey = refreshed.OpenAi.ApiKey;
-            aiOptions.OpenAi.Model = refreshed.OpenAi.Model;
-            aiOptions.OpenAi.Endpoint = refreshed.OpenAi.Endpoint;
-            aiOptions.Gemini.ApiKey = refreshed.Gemini.ApiKey;
-            aiOptions.Gemini.Model = refreshed.Gemini.Model;
-            aiOptions.Gemini.Endpoint = refreshed.Gemini.Endpoint;
-
-            await configService.SaveDocumentConfigAsync(documentConfig);
-            await configService.SaveAiSettingsAsync(aiSettings, txtOpenAiKey.Text, txtGeminiKey.Text);
-
-            MessageBox.Show("Settings saved and AI clients refreshed.");
+            try
+            {
+                await controller.SaveSettingsAsync(state, txtOpenAiKey.Text, txtGeminiKey.Text).ConfigureAwait(true);
+                MessageBox.Show("Settings saved and AI clients refreshed.");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to save settings: {ex.Message}");
+            }
         }
 
         private async Task LoadAuditAsync(int page, string? action = null, string? user = null)
         {
-            if (auditRepository is null) { MessageBox.Show("Service unavailable"); return; }
-            if (page < 1) page = 1;
-            var skip = (page - 1) * AuditPageSize;
+            var result = await controller.LoadAuditPageAsync(page, AuditPageSize, action, user).ConfigureAwait(true);
+
             lvAudit.Items.Clear();
-            var totalCount = await auditRepository.GetCountAsync(action, user);
-            var entries = await auditRepository.GetPagedAsync(AuditPageSize, skip, action, user);
-            foreach (var entry in entries)
+            foreach (var entry in result.Entries)
             {
                 var item = new ListViewItem(entry.CreatedAtUtc.ToLocalTime().ToString("g"));
                 item.SubItems.Add(entry.CreatedBy);
@@ -628,9 +425,9 @@ namespace DocControl
                 item.Tag = entry.DocumentId;
                 lvAudit.Items.Add(item);
             }
-            auditPage = page;
-            var totalPages = Math.Max(1, (int)Math.Ceiling(totalCount / (double)AuditPageSize));
-            lblAuditPage.Text = $"Page {auditPage} / {totalPages}";
+
+            auditPage = result.Page;
+            lblAuditPage.Text = $"Page {result.Page} / {result.TotalPages}";
         }
 
         private async void btnAuditRefresh_Click(object sender, EventArgs e)
@@ -662,7 +459,6 @@ namespace DocControl
 
         private void LoadSettingsToUi()
         {
-            if (documentConfig is null || aiSettings is null) return;
             numPadding.Value = Math.Max(numPadding.Minimum, Math.Min(numPadding.Maximum, documentConfig.PaddingLength));
             txtSeparator.Text = documentConfig.Separator;
             chkEnableLevel4.Checked = documentConfig.EnableLevel4;
@@ -671,7 +467,7 @@ namespace DocControl
             txtGeminiModel.Text = aiSettings.GeminiModel;
             cmbProvider.Items.Clear();
             cmbProvider.Items.AddRange(new object[] { "OpenAI", "Gemini" });
-            cmbProvider.SelectedItem = aiSettings.Provider == AI.AiProvider.Gemini ? "Gemini" : "OpenAI";
+            cmbProvider.SelectedItem = aiSettings.Provider == AiProvider.Gemini ? "Gemini" : "OpenAI";
         }
 
         private void chkEnableLevel4_CheckedChanged(object sender, EventArgs e)
@@ -690,25 +486,24 @@ namespace DocControl
 
         private async void lvAudit_DoubleClick(object sender, EventArgs e)
         {
-            if (documentRepository is null) return;
             if (lvAudit.SelectedItems.Count == 0) return;
             var docIdObj = lvAudit.SelectedItems[0].Tag;
             if (docIdObj is int docId)
             {
-                var doc = await documentRepository.GetByIdAsync(docId);
+                var doc = await controller.GetDocumentAsync(docId).ConfigureAwait(true);
                 if (doc is null)
                 {
                     MessageBox.Show("Document not found.");
                     return;
                 }
-                var level4 = string.IsNullOrWhiteSpace(doc.Level4) ? string.Empty : $"{documentConfig?.Separator}{doc.Level4}";
-                MessageBox.Show($"DocId: {doc.Id}\nCode: {doc.Level1}{documentConfig?.Separator}{doc.Level2}{documentConfig?.Separator}{doc.Level3}{level4}{documentConfig?.Separator}{doc.Number}\nFile: {doc.FileName}\nBy: {doc.CreatedBy}\nAt: {doc.CreatedAtUtc.ToLocalTime():g}");
+
+                var level4 = string.IsNullOrWhiteSpace(doc.Level4) ? string.Empty : $"{documentConfig.Separator}{doc.Level4}";
+                MessageBox.Show($"DocId: {doc.Id}\nCode: {doc.Level1}{documentConfig.Separator}{doc.Level2}{documentConfig.Separator}{doc.Level3}{level4}{documentConfig.Separator}{doc.Number}\nFile: {doc.FileName}\nBy: {doc.CreatedBy}\nAt: {doc.CreatedAtUtc.ToLocalTime():g}");
             }
         }
 
         private async void btnSeedSelected_Click(object sender, EventArgs e)
         {
-            if (importService is null) { MessageBox.Show("Service unavailable"); return; }
             var selectedSummaries = lvImportSummary.SelectedItems
                 .Cast<ListViewItem>()
                 .Select(i => i.Tag as ImportSeriesSummary)
@@ -720,23 +515,23 @@ namespace DocControl
                 MessageBox.Show("Select one or more series to seed.");
                 return;
             }
-            await importService.SeedAsync(selectedSummaries);
+
+            await controller.SeedSeriesAsync(selectedSummaries).ConfigureAwait(true);
             MessageBox.Show($"Seeded {selectedSummaries.Count} series counters.");
         }
 
         private async Task LoadDocsAsync()
         {
-            if (documentRepository is null) { MessageBox.Show("Service unavailable"); return; }
             lvDocs.Items.Clear();
-            var docs = await documentRepository.GetRecentAsync();
+            var docs = await controller.LoadRecentDocumentsAsync().ConfigureAwait(true);
             foreach (var doc in docs)
             {
-                var sep = documentConfig?.Separator ?? "-";
-                var pad = documentConfig?.PaddingLength ?? 3;
+                var sep = documentConfig.Separator;
+                var pad = documentConfig.PaddingLength;
                 var num = doc.Number.ToString().PadLeft(pad, '0');
 
                 var parts = new List<string> { doc.Level1, doc.Level2, doc.Level3 };
-                if (documentConfig?.EnableLevel4 == true && !string.IsNullOrWhiteSpace(doc.Level4))
+                if (documentConfig.EnableLevel4 && !string.IsNullOrWhiteSpace(doc.Level4))
                 {
                     parts.Add(doc.Level4);
                 }
@@ -761,24 +556,18 @@ namespace DocControl
         {
             if (lvDocs.SelectedItems.Count == 0) return;
             if (lvDocs.SelectedItems[0].Tag is not DocumentRecord doc) return;
-            var level4 = string.IsNullOrWhiteSpace(doc.Level4) ? string.Empty : $"{documentConfig?.Separator}{doc.Level4}";
-            MessageBox.Show($"DocId: {doc.Id}\nCode: {doc.Level1}{documentConfig?.Separator}{doc.Level2}{documentConfig?.Separator}{doc.Level3}{level4}{documentConfig?.Separator}{doc.Number}\nFile: {doc.FileName}\nBy: {doc.CreatedBy}\nAt: {doc.CreatedAtUtc.ToLocalTime():g}");
+            var level4 = string.IsNullOrWhiteSpace(doc.Level4) ? string.Empty : $"{documentConfig.Separator}{doc.Level4}";
+            MessageBox.Show($"DocId: {doc.Id}\nCode: {doc.Level1}{documentConfig.Separator}{doc.Level2}{documentConfig.Separator}{doc.Level3}{level4}{documentConfig.Separator}{doc.Number}\nFile: {doc.FileName}\nBy: {doc.CreatedBy}\nAt: {doc.CreatedAtUtc.ToLocalTime():g}");
         }
 
         private async void btnCodesImportCsv_Click(object sender, EventArgs e)
         {
-            if (codeImportService is null)
-            {
-                MessageBox.Show("Code import service unavailable");
-                return;
-            }
-
-            using var importForm = new CodeImportForm(codeImportService);
+            using var importForm = new CodeImportForm(controller);
             if (importForm.ShowDialog(this) == DialogResult.OK)
             {
                 await LoadCodesDisplayAsync();
                 MessageBox.Show("Codes imported successfully.", "Import Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                
+
                 await PopulateLevel1CodesAsync();
                 await PopulateLevel2CodesAsync();
                 await PopulateLevel3CodesAsync();
@@ -792,49 +581,17 @@ namespace DocControl
 
         private async Task LoadCodesDisplayAsync()
         {
-            if (codeSeriesRepository is null) return;
-
             lvCodes.Items.Clear();
 
             try
             {
-                var level1Codes = await codeSeriesRepository.GetLevel1CodesAsync();
-                foreach (var code in level1Codes)
+                var items = await controller.LoadCodesDisplayAsync(documentConfig.EnableLevel4).ConfigureAwait(true);
+                foreach (var item in items)
                 {
-                    var item = new ListViewItem("1");
-                    item.SubItems.Add(code);
-                    item.SubItems.Add("Level 1 Code");
-                    lvCodes.Items.Add(item);
-                }
-
-                var level2Codes = await codeSeriesRepository.GetLevel2CodesAsync();
-                foreach (var code in level2Codes)
-                {
-                    var item = new ListViewItem("2");
-                    item.SubItems.Add(code);
-                    item.SubItems.Add("Level 2 Code");
-                    lvCodes.Items.Add(item);
-                }
-
-                var level3Codes = await codeSeriesRepository.GetLevel3CodesAsync();
-                foreach (var code in level3Codes)
-                {
-                    var item = new ListViewItem("3");
-                    item.SubItems.Add(code);
-                    item.SubItems.Add("Level 3 Code");
-                    lvCodes.Items.Add(item);
-                }
-
-                if (documentConfig?.EnableLevel4 == true)
-                {
-                    var level4Codes = await codeSeriesRepository.GetLevel4CodesAsync();
-                    foreach (var code in level4Codes)
-                    {
-                        var item = new ListViewItem("4");
-                        item.SubItems.Add(code);
-                        item.SubItems.Add("Level 4 Code");
-                        lvCodes.Items.Add(item);
-                    }
+                    var listViewItem = new ListViewItem(item.Level.ToString());
+                    listViewItem.SubItems.Add(item.Code);
+                    listViewItem.SubItems.Add(item.Description);
+                    lvCodes.Items.Add(listViewItem);
                 }
             }
             catch (Exception ex)

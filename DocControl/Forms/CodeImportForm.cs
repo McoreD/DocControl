@@ -1,19 +1,19 @@
-using DocControl.Services;
+using DocControl.Presentation;
 
 namespace DocControl.Forms;
 
 public partial class CodeImportForm : Form
 {
-    private readonly CodeImportService codeImportService;
-    private TextBox csvTextBox;
-    private Button importButton;
-    private Button selectFileButton;
-    private Label statusLabel;
-    private ProgressBar progressBar;
+    private readonly MainController mainController;
+    private TextBox csvTextBox = null!;
+    private Button importButton = null!;
+    private Button selectFileButton = null!;
+    private Label statusLabel = null!;
+    private ProgressBar progressBar = null!;
 
-    public CodeImportForm(CodeImportService codeImportService)
+    public CodeImportForm(MainController mainController)
     {
-        this.codeImportService = codeImportService;
+        this.mainController = mainController;
         InitializeComponent();
     }
 
@@ -69,7 +69,7 @@ public partial class CodeImportForm : Form
             Location = new Point(0, 5)
         };
         importButton.Click += ImportButton_Click;
-        
+
         var cancelButton = new Button
         {
             Text = "Cancel",
@@ -78,7 +78,7 @@ public partial class CodeImportForm : Form
             DialogResult = DialogResult.Cancel
         };
 
-        buttonPanel.Controls.AddRange([importButton, cancelButton]);
+        buttonPanel.Controls.AddRange(new Control[] { importButton, cancelButton });
 
         // Status
         statusLabel = new Label
@@ -152,15 +152,15 @@ public partial class CodeImportForm : Form
 
         try
         {
-            var result = await codeImportService.ImportCodesFromCsvAsync(csvTextBox.Text);
+            var result = await mainController.ImportCodesAsync(csvTextBox.Text).ConfigureAwait(true);
 
             progressBar.Visible = false;
-            
+
             if (result.HasErrors)
             {
                 var message = $"Import completed with {result.SuccessCount} successful imports and {result.Errors.Count} errors:\n\n" +
-                             string.Join("\n", result.Errors.Take(10));
-                
+                              string.Join("\n", result.Errors.Take(10));
+
                 if (result.Errors.Count > 10)
                 {
                     message += $"\n... and {result.Errors.Count - 10} more errors.";

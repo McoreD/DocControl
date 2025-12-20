@@ -16,7 +16,7 @@ public sealed class ImportService
 
     public Task<ImportResult> ImportFilesAsync(IEnumerable<string> filePaths, bool seedCounters = true, CancellationToken cancellationToken = default)
     {
-        var fileNames = filePaths.Select(Path.GetFileName);
+        var fileNames = filePaths.Select(f => Path.GetFileName(f) ?? string.Empty);
         return ImportFileNamesAsync(fileNames, seedCounters, cancellationToken);
     }
 

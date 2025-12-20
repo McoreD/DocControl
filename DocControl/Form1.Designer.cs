@@ -565,6 +565,7 @@ namespace DocControl
             chkSettingsEnableLevel4.TabIndex = 0;
             chkSettingsEnableLevel4.Text = "Enable Level4";
             chkSettingsEnableLevel4.UseVisualStyleBackColor = true;
+            chkSettingsEnableLevel4.CheckedChanged += chkSettingsEnableLevel4_CheckedChanged;
 
             txtSeparator.Location = new Point(104, 124);
             txtSeparator.Name = "txtSeparator";
@@ -670,6 +671,7 @@ namespace DocControl
             btnAuditRefresh.TabIndex = 0;
             btnAuditRefresh.Text = "Refresh";
             btnAuditRefresh.UseVisualStyleBackColor = true;
+            btnAuditRefresh.Click += btnAuditRefresh_Click;
 
             btnAuditFilter.Location = new Point(165, 24);
             btnAuditFilter.Name = "btnAuditFilter";
@@ -677,6 +679,7 @@ namespace DocControl
             btnAuditFilter.TabIndex = 1;
             btnAuditFilter.Text = "Filter";
             btnAuditFilter.UseVisualStyleBackColor = true;
+            btnAuditFilter.Click += btnAuditFilter_Click;
 
             labelAuditUser.AutoSize = true;
             labelAuditUser.Location = new Point(24, 60);
@@ -712,6 +715,7 @@ namespace DocControl
             lvAudit.TabIndex = 6;
             lvAudit.UseCompatibleStateImageBehavior = false;
             lvAudit.View = View.Details;
+            lvAudit.DoubleClick += lvAudit_DoubleClick;
 
             colAt.Text = "Timestamp";
             colAt.Width = 150;
@@ -734,6 +738,7 @@ namespace DocControl
             btnAuditPrev.TabIndex = 7;
             btnAuditPrev.Text = "< Previous";
             btnAuditPrev.UseVisualStyleBackColor = true;
+            btnAuditPrev.Click += btnAuditPrev_Click;
 
             lblAuditPage.AutoSize = true;
             lblAuditPage.Location = new Point(350, 356);
@@ -749,6 +754,7 @@ namespace DocControl
             btnAuditNext.TabIndex = 9;
             btnAuditNext.Text = "Next >";
             btnAuditNext.UseVisualStyleBackColor = true;
+            btnAuditNext.Click += btnAuditNext_Click;
 
             // tabDocs
             tabDocs.Controls.Add(btnDocsRefresh);
@@ -775,6 +781,7 @@ namespace DocControl
             btnImportCsv.TabIndex = 1;
             btnImportCsv.Text = "Import CSV";
             btnImportCsv.UseVisualStyleBackColor = true;
+            btnImportCsv.Click += btnImportCsv_Click;
 
             btnDocsRefresh.Location = new Point(165, 54);
             btnDocsRefresh.Name = "btnDocsRefresh";
@@ -782,6 +789,7 @@ namespace DocControl
             btnDocsRefresh.TabIndex = 2;
             btnDocsRefresh.Text = "Refresh";
             btnDocsRefresh.UseVisualStyleBackColor = true;
+            btnDocsRefresh.Click += btnDocsRefresh_Click;
 
             lvDocs.Columns.AddRange(new ColumnHeader[] { colDocCode, colDocFile, colDocBy, colDocAt });
             lvDocs.FullRowSelect = true;
@@ -793,6 +801,7 @@ namespace DocControl
             lvDocs.TabIndex = 3;
             lvDocs.UseCompatibleStateImageBehavior = false;
             lvDocs.View = View.Details;
+            lvDocs.DoubleClick += lvDocs_DoubleClick;
 
             colDocCode.Text = "Document Code";
             colDocCode.Width = 150;
