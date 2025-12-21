@@ -28,6 +28,8 @@ namespace DocControl.Wpf
         private bool isPopulatingDropdowns = false;
         private GridViewColumnHeader? _lastDocsColumnHeader = null;
         private ListSortDirection _lastDocsDirection = ListSortDirection.Ascending;
+        private bool isGenerating = false;
+        private bool isRecommending = false;
 
         public MainWindow(MainController controller, DocumentConfig documentConfig, AiSettings aiSettings, AiClientOptions aiOptions)
         {
@@ -191,29 +193,40 @@ namespace DocControl.Wpf
 
         private async void btnGenerate_Click(object sender, RoutedEventArgs e)
         {
-            if (!ValidateLevels(out var msg))
-            {
-                MessageBox.Show(msg, "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            var key = BuildKeyFromInputs();
-            var freeText = txtFreeText.Text.Trim();
-            var ext = txtExtension.Text.Trim();
-
+            if (isGenerating) return;
+            isGenerating = true;
+            btnGenerate.IsEnabled = false;
             try
             {
-                var result = await controller.GenerateDocumentAsync(key, freeText, Environment.UserName, ext);
-                lblGenerateResult.Text = $"Created: {result.FileName} (audited)";
-
-                if (chkCopyAfterGenerate.IsChecked == true)
+                if (!ValidateLevels(out var msg))
                 {
-                    Clipboard.SetText(result.FileName);
+                    MessageBox.Show(msg, "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                var key = BuildKeyFromInputs();
+                var freeText = txtFreeText.Text.Trim();
+                var ext = txtExtension.Text.Trim();
+
+                try
+                {
+                    var result = await controller.GenerateDocumentAsync(key, freeText, Environment.UserName, ext);
+                    lblGenerateResult.Text = $"Created: {result.FileName} (audited)";
+
+                    if (chkCopyAfterGenerate.IsChecked == true)
+                    {
+                        Clipboard.SetText(result.FileName);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Generate failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
-            catch (Exception ex)
+            finally
             {
-                MessageBox.Show($"Generate failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                isGenerating = false;
+                btnGenerate.IsEnabled = true;
             }
         }
 
@@ -432,65 +445,82 @@ namespace DocControl.Wpf
 
         private async void btnRecommend_Click(object sender, RoutedEventArgs e)
         {
-            var query = txtNlq.Text.Trim();
-            if (string.IsNullOrWhiteSpace(query))
-            {
-                MessageBox.Show("Please enter a natural language query.", "Input Required", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
+            await RunRecommendAsync();
+        }
 
+        private async void txtNlq_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter && Keyboard.Modifiers == ModifierKeys.None)
+            {
+                e.Handled = true; // prevent newline and trigger recommend
+                await RunRecommendAsync();
+            }
+        }
+
+        private async Task RunRecommendAsync()
+        {
+            if (isRecommending) return;
+            isRecommending = true;
+            btnRecommend.IsEnabled = false;
             try
             {
-                // First interpret to show user what was understood
-                var interpretation = await controller.InterpretAsync(query);
-                if (interpretation != null)
+                var query = txtNlq.Text.Trim();
+                if (string.IsNullOrWhiteSpace(query))
                 {
-                    txtNlqResult.Text = $"Document Type: {interpretation.DocumentType}\nOwner: {interpretation.Owner}\n" +
-                                       $"Levels: {interpretation.Level1}/{interpretation.Level2}/{interpretation.Level3}/{interpretation.Level4}\n" +
-                                       $"Free Text: {interpretation.FreeText}";
-                }
-                else
-                {
-                    txtNlqResult.Text = "No interpretation available.";
-                }
-
-                // Then ask AI to pick best codes (or propose new) based on the query and catalog
-                var aiRec = await controller.RecommendWithAiAsync(query);
-                if (aiRec == null)
-                {
-                    lblRecommendResult.Text = "Recommended: -- (Next: --)";
-                    MessageBox.Show("AI did not return a recommendation.", "No Result", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show("Please enter a natural language query.", "Input Required", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
-                // Populate dropdowns from AI suggestion
-                isPopulatingDropdowns = true;
-                cmbLevel1.Text = aiRec.Level1;
-                await PopulateLevel2CodesAsync();
-                cmbLevel2.Text = aiRec.Level2;
-                await PopulateLevel3CodesAsync();
-                cmbLevel3.Text = aiRec.Level3;
-                if (documentConfig.EnableLevel4 && !string.IsNullOrWhiteSpace(aiRec.Level4))
+                try
                 {
-                    await PopulateLevel4CodesAsync();
-                    cmbLevel4.Text = aiRec.Level4;
+                    var interpretation = await controller.InterpretAsync(query);
+                    if (interpretation != null)
+                    {
+                        txtNlqResult.Text = $"Document Type: {interpretation.DocumentType}\nOwner: {interpretation.Owner}\n" +
+                                           $"Levels: {interpretation.Level1}/{interpretation.Level2}/{interpretation.Level3}/{interpretation.Level4}\n" +
+                                           $"Free Text: {interpretation.FreeText}";
+                    }
+                    else
+                    {
+                        txtNlqResult.Text = "No interpretation available.";
+                    }
+
+                    var aiRec = await controller.RecommendWithAiAsync(query);
+                    if (aiRec == null)
+                    {
+                        lblRecommendResult.Text = "Recommended: -- (Next: --)";
+                        MessageBox.Show("AI did not return a recommendation.", "No Result", MessageBoxButton.OK, MessageBoxImage.Information);
+                        return;
+                    }
+
+                    isPopulatingDropdowns = true;
+                    cmbLevel1.Text = aiRec.Level1;
+                    await PopulateLevel2CodesAsync();
+                    cmbLevel2.Text = aiRec.Level2;
+                    await PopulateLevel3CodesAsync();
+                    cmbLevel3.Text = aiRec.Level3;
+                    if (documentConfig.EnableLevel4 && !string.IsNullOrWhiteSpace(aiRec.Level4))
+                    {
+                        await PopulateLevel4CodesAsync();
+                        cmbLevel4.Text = aiRec.Level4;
+                    }
+                    isPopulatingDropdowns = false;
+
+                    lblRecommendResult.Text = $"Recommended: {aiRec.Level1}-{aiRec.Level2}-{aiRec.Level3}{(string.IsNullOrWhiteSpace(aiRec.Level4) ? string.Empty : "-" + aiRec.Level4)}";
                 }
-                isPopulatingDropdowns = false;
-
-                lblRecommendResult.Text = $"Recommended: {aiRec.Level1}-{aiRec.Level2}-{aiRec.Level3}{(string.IsNullOrWhiteSpace(aiRec.Level4) ? string.Empty : "-" + aiRec.Level4)}";
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Recommendation failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
-            catch (Exception ex)
+            finally
             {
-                MessageBox.Show($"Recommendation failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                isRecommending = false;
+                btnRecommend.IsEnabled = true;
             }
         }
 
-        private void btnUseSuggested_Click(object sender, RoutedEventArgs e)
-        {
-            btnRecommend_Click(sender, e);
-        }
-
-        private void btnCreateRecommended_Click(object sender, RoutedEventArgs e)
+        private async void btnCreateRecommended_Click(object sender, RoutedEventArgs e)
         {
             btnGenerate_Click(sender, e);
         }
