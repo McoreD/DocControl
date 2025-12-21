@@ -10,6 +10,7 @@ using DocControl.Infrastructure.Services;
 using Microsoft.Win32;
 using System.ComponentModel;
 using System.Windows.Data;
+using System.Linq;
 
 namespace DocControl.Wpf
 {
@@ -54,6 +55,10 @@ namespace DocControl.Wpf
             cmbProvider.SelectedIndex = aiSettings.Provider == AiProvider.Gemini ? 1 : 0;
             txtOpenAiModel.Text = aiSettings.OpenAiModel;
             txtGeminiModel.Text = aiSettings.GeminiModel;
+            
+            // Populate stored API keys (may be masked in UI)
+            txtOpenAiKey.Password = aiOptions.OpenAi.ApiKey;
+            txtGeminiKey.Password = aiOptions.Gemini.ApiKey;
 
             await PopulateLevel1CodesAsync();
             await PopulateLevel2CodesAsync();
@@ -391,67 +396,6 @@ namespace DocControl.Wpf
             }
         }
 
-        private async void btnImportCsv_Click(object sender, RoutedEventArgs e)
-        {
-            var dialog = new OpenFileDialog
-            {
-                Filter = "CSV files|*.csv|Text files|*.txt|All files|*.*",
-                Title = "Select CSV file (code + name)"
-            };
-
-            if (dialog.ShowDialog() != true) return;
-
-            var lines = await File.ReadAllLinesAsync(dialog.FileName);
-            var outcome = await controller.ImportDocumentsAsync(lines, Environment.UserName);
-
-            await LoadDocsAsync();
-
-            lblImportResult.Text = $"Valid: {outcome.ValidCount}, Invalid: {outcome.InvalidCount}";
-            lstImportInvalid.Items.Clear();
-            foreach (var error in outcome.Errors.Take(50))
-            {
-                lstImportInvalid.Items.Add(error);
-            }
-
-            lastSummaries = outcome.Summaries.ToList();
-            lvImportSummary.Items.Clear();
-            foreach (var s in outcome.Summaries)
-            {
-                var seriesText = documentConfig.EnableLevel4 && s.SeriesKey.Level4 is not null
-                    ? $"{s.SeriesKey.Level1}{documentConfig.Separator}{s.SeriesKey.Level2}{documentConfig.Separator}{s.SeriesKey.Level3}{documentConfig.Separator}{s.SeriesKey.Level4}"
-                    : $"{s.SeriesKey.Level1}{documentConfig.Separator}{s.SeriesKey.Level2}{documentConfig.Separator}{s.SeriesKey.Level3}";
-                
-                lvImportSummary.Items.Add(new
-                {
-                    SeriesText = seriesText,
-                    MaxNumber = s.MaxNumber,
-                    NextNumber = s.NextNumber,
-                    Summary = s
-                });
-            }
-
-            var msg = $"Imported {outcome.ValidCount} rows. Invalid: {outcome.InvalidCount}.";
-            if (outcome.Errors.Count > 0)
-            {
-                msg += $"\nFirst {Math.Min(50, outcome.Errors.Count)} errors listed below.";
-            }
-            MessageBox.Show(msg, "Import Complete", MessageBoxButton.OK, MessageBoxImage.Information);
-        }
-
-        private async void btnSeedSelected_Click(object sender, RoutedEventArgs e)
-        {
-            var selectedItems = lvImportSummary.SelectedItems.Cast<dynamic>().ToList();
-            if (selectedItems.Count == 0)
-            {
-                MessageBox.Show("Select one or more series to seed.", "No Selection", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            var selectedSummaries = selectedItems.Select(i => (ImportSeriesSummary)i.Summary).ToList();
-            await controller.SeedSeriesAsync(selectedSummaries);
-            MessageBox.Show($"Seeded {selectedSummaries.Count} series counters.", "Seed Complete", MessageBoxButton.OK, MessageBoxImage.Information);
-        }
-
         private async void btnInterpret_Click(object sender, RoutedEventArgs e)
         {
             var query = txtNlq.Text.Trim();
@@ -492,23 +436,30 @@ namespace DocControl.Wpf
 
             try
             {
-                var key = BuildKeyFromInputs();
-                var recommendation = await controller.RecommendAsync(key);
-                
-                var recKey = recommendation.SeriesKey;
-                lblRecommendResult.Text = $"Recommended: {recKey.Level1}-{recKey.Level2}-{recKey.Level3} (Next: {recommendation.SuggestedNext})";
-                
-                cmbLevel1.Text = recKey.Level1;
+                var aiRec = await controller.RecommendWithAiAsync(query);
+                if (aiRec == null)
+                {
+                    lblRecommendResult.Text = "Recommended: -- (Next: --)";
+                    MessageBox.Show("AI did not return a recommendation.", "No Result", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+
+                // Populate dropdowns from AI suggestion
+                isPopulatingDropdowns = true;
+                cmbLevel1.Text = aiRec.Level1;
                 await PopulateLevel2CodesAsync();
-                cmbLevel2.Text = recKey.Level2;
+                cmbLevel2.Text = aiRec.Level2;
                 await PopulateLevel3CodesAsync();
-                cmbLevel3.Text = recKey.Level3;
-                
-                if (documentConfig.EnableLevel4 && !string.IsNullOrWhiteSpace(recKey.Level4))
+                cmbLevel3.Text = aiRec.Level3;
+                if (documentConfig.EnableLevel4 && !string.IsNullOrWhiteSpace(aiRec.Level4))
                 {
                     await PopulateLevel4CodesAsync();
-                    cmbLevel4.Text = recKey.Level4;
+                    cmbLevel4.Text = aiRec.Level4;
                 }
+                isPopulatingDropdowns = false;
+
+                // Show recommendation text
+                lblRecommendResult.Text = $"Recommended: {aiRec.Level1}-{aiRec.Level2}-{aiRec.Level3}{(string.IsNullOrWhiteSpace(aiRec.Level4) ? string.Empty : "-" + aiRec.Level4)}";
             }
             catch (Exception ex)
             {
@@ -538,7 +489,10 @@ namespace DocControl.Wpf
                     txtOpenAiModel.Text,
                     txtGeminiModel.Text);
 
-                await controller.SaveSettingsAsync(state, string.Empty, string.Empty);
+                var openAiKey = txtOpenAiKey.Password;
+                var geminiKey = txtGeminiKey.Password;
+
+                await controller.SaveSettingsAsync(state, openAiKey, geminiKey);
                 
                 documentConfig.Separator = state.Separator;
                 documentConfig.PaddingLength = state.PaddingLength;
@@ -754,6 +708,67 @@ namespace DocControl.Wpf
                 "Document Details",
                 MessageBoxButton.OK,
                 MessageBoxImage.Information);
+        }
+
+        private async void btnImportCsv_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new OpenFileDialog
+            {
+                Filter = "CSV files|*.csv|Text files|*.txt|All files|*.*",
+                Title = "Select CSV file (code + name)"
+            };
+
+            if (dialog.ShowDialog() != true) return;
+
+            var lines = await File.ReadAllLinesAsync(dialog.FileName);
+            var outcome = await controller.ImportDocumentsAsync(lines, Environment.UserName);
+
+            await LoadDocsAsync();
+
+            lblImportResult.Text = $"Valid: {outcome.ValidCount}, Invalid: {outcome.InvalidCount}";
+            lstImportInvalid.Items.Clear();
+            foreach (var error in outcome.Errors.Take(50))
+            {
+                lstImportInvalid.Items.Add(error);
+            }
+
+            lastSummaries = outcome.Summaries.ToList();
+            lvImportSummary.Items.Clear();
+            foreach (var s in outcome.Summaries)
+            {
+                var seriesText = documentConfig.EnableLevel4 && s.SeriesKey.Level4 is not null
+                    ? $"{s.SeriesKey.Level1}{documentConfig.Separator}{s.SeriesKey.Level2}{documentConfig.Separator}{s.SeriesKey.Level3}{documentConfig.Separator}{s.SeriesKey.Level4}"
+                    : $"{s.SeriesKey.Level1}{documentConfig.Separator}{s.SeriesKey.Level2}{documentConfig.Separator}{s.SeriesKey.Level3}";
+                
+                lvImportSummary.Items.Add(new
+                {
+                    SeriesText = seriesText,
+                    MaxNumber = s.MaxNumber,
+                    NextNumber = s.NextNumber,
+                    Summary = s
+                });
+            }
+
+            var msg = $"Imported {outcome.ValidCount} rows. Invalid: {outcome.InvalidCount}.";
+            if (outcome.Errors.Count > 0)
+            {
+                msg += $"\nFirst {Math.Min(50, outcome.Errors.Count)} errors listed below.";
+            }
+            MessageBox.Show(msg, "Import Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        private async void btnSeedSelected_Click(object sender, RoutedEventArgs e)
+        {
+            var selectedItems = lvImportSummary.SelectedItems.Cast<dynamic>().ToList();
+            if (selectedItems.Count == 0)
+            {
+                MessageBox.Show("Select one or more series to seed.", "No Selection", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var selectedSummaries = selectedItems.Select(i => (ImportSeriesSummary)i.Summary).ToList();
+            await controller.SeedSeriesAsync(selectedSummaries);
+            MessageBox.Show($"Seeded {selectedSummaries.Count} series counters.", "Seed Complete", MessageBoxButton.OK, MessageBoxImage.Information);
         }
     }
 }

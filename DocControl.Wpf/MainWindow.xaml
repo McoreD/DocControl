@@ -7,6 +7,35 @@
         mc:Ignorable="d"
         Title="DocControl" Height="500" Width="850">
     <TabControl>
+        <!-- Recommend Tab -->
+        <TabItem Header="Recommend">
+            <Grid Margin="10">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0" Text="Natural Language Query:" Margin="0,0,0,5"/>
+                <TextBox Grid.Row="1" Name="txtNlq" Height="60" TextWrapping="Wrap" AcceptsReturn="True" Margin="0,0,0,10"/>
+
+                <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,10">
+                    <Button Name="btnInterpret" Content="Interpret" Padding="10,5" Margin="0,0,10,0" Click="btnInterpret_Click"/>
+                    <Button Name="btnRecommend" Content="Recommend Code" Padding="10,5" Margin="0,0,10,0" Click="btnRecommend_Click"/>
+                    <Button Name="btnUseSuggested" Content="Use Suggested" Padding="10,5" Margin="0,0,10,0" Click="btnUseSuggested_Click"/>
+                    <Button Name="btnCreateRecommended" Content="Create Document" Padding="10,5" Click="btnCreateRecommended_Click"/>
+                </StackPanel>
+
+                <TextBox Grid.Row="3" Name="txtNlqResult" IsReadOnly="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" Margin="0,0,0,10"/>
+                
+                <TextBlock Grid.Row="4" Name="lblRecommendResult" FontWeight="Bold" Margin="0,0,0,5"/>
+                <TextBlock Grid.Row="5" Name="lblRecommendInfo" Text="AI-powered code recommendations based on natural language descriptions" FontStyle="Italic"/>
+            </Grid>
+        </TabItem>
+
         <!-- Generate Tab -->
         <TabItem Header="Generate">
             <Grid Margin="10">
@@ -83,181 +112,6 @@
                         </GridView>
                     </ListView.View>
                 </ListView>
-            </Grid>
-        </TabItem>
-
-        <!-- Import Tab -->
-        <TabItem Header="Import">
-            <Grid Margin="10">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="200"/>
-                </Grid.RowDefinitions>
-
-                <Button Grid.Row="0" Name="btnImportCsv" Content="Import Documents CSV..." Padding="10,5" Margin="0,0,0,10" HorizontalAlignment="Left" Click="btnImportCsv_Click"/>
-                
-                <TextBlock Grid.Row="1" Name="lblImportResult" FontWeight="Bold" Margin="0,0,0,5"/>
-                <TextBlock Grid.Row="2" Name="lblImportNote" Text="CSV Format: code,filename (e.g., ABC-001-XYZ-0001,mydoc.pdf)" Margin="0,0,0,10"/>
-
-                <GroupBox Grid.Row="3" Header="Invalid Entries" Margin="0,0,0,10">
-                    <ListBox Name="lstImportInvalid"/>
-                </GroupBox>
-
-                <StackPanel Grid.Row="4" Orientation="Horizontal" Margin="0,0,0,10">
-                    <CheckBox Name="chkSeedCounters" Content="Show series counters" IsChecked="True" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                    <Button Name="btnSeedSelected" Content="Seed Selected Series" Padding="10,5" Click="btnSeedSelected_Click"/>
-                    <TextBlock Name="lblImportPerSeries" Text="Select series to seed their next counters" VerticalAlignment="Center" Margin="10,0,0,0"/>
-                </StackPanel>
-
-                <ListView Grid.Row="5" Name="lvImportSummary">
-                    <ListView.View>
-                        <GridView>
-                            <GridViewColumn Header="Series" Width="250" DisplayMemberBinding="{Binding SeriesText}"/>
-                            <GridViewColumn Header="Max Number" Width="100" DisplayMemberBinding="{Binding MaxNumber}"/>
-                            <GridViewColumn Header="Next Number" Width="100" DisplayMemberBinding="{Binding NextNumber}"/>
-                        </GridView>
-                    </ListView.View>
-                </ListView>
-            </Grid>
-        </TabItem>
-
-        <!-- Recommend Tab -->
-        <TabItem Header="Recommend">
-            <Grid Margin="10">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-
-                <TextBlock Grid.Row="0" Text="Natural Language Query:" Margin="0,0,0,5"/>
-                <TextBox Grid.Row="1" Name="txtNlq" Height="60" TextWrapping="Wrap" AcceptsReturn="True" Margin="0,0,0,10"/>
-
-                <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,10">
-                    <Button Name="btnInterpret" Content="Interpret" Padding="10,5" Margin="0,0,10,0" Click="btnInterpret_Click"/>
-                    <Button Name="btnRecommend" Content="Recommend Code" Padding="10,5" Margin="0,0,10,0" Click="btnRecommend_Click"/>
-                    <Button Name="btnUseSuggested" Content="Use Suggested" Padding="10,5" Margin="0,0,10,0" Click="btnUseSuggested_Click"/>
-                    <Button Name="btnCreateRecommended" Content="Create Document" Padding="10,5" Click="btnCreateRecommended_Click"/>
-                </StackPanel>
-
-                <TextBox Grid.Row="3" Name="txtNlqResult" IsReadOnly="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" Margin="0,0,0,10"/>
-                
-                <TextBlock Grid.Row="4" Name="lblRecommendResult" FontWeight="Bold" Margin="0,0,0,5"/>
-                <TextBlock Grid.Row="5" Name="lblRecommendInfo" Text="AI-powered code recommendations based on natural language descriptions" FontStyle="Italic"/>
-            </Grid>
-        </TabItem>
-
-        <!-- Settings Tab -->
-        <TabItem Header="Settings">
-            <ScrollViewer VerticalScrollBarVisibility="Auto">
-                <Grid Margin="10">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="150"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-
-                    <Label Grid.Row="0" Grid.Column="0" Content="Separator:" VerticalAlignment="Center"/>
-                    <TextBox Grid.Row="0" Grid.Column="1" Name="txtSeparator" Margin="0,5"/>
-
-                    <Label Grid.Row="1" Grid.Column="0" Content="Padding Length:" VerticalAlignment="Center"/>
-                    <TextBox Grid.Row="1" Grid.Column="1" Name="txtPadding" Margin="0,5"/>
-
-                    <CheckBox Grid.Row="2" Grid.Column="1" Name="chkSettingsEnableLevel4" Content="Enable Level 4" Margin="0,10"/>
-
-                    <Label Grid.Row="3" Grid.Column="0" Content="AI Provider:" VerticalAlignment="Center"/>
-                    <ComboBox Grid.Row="3" Grid.Column="1" Name="cmbProvider" Margin="0,5">
-                        <ComboBoxItem Content="OpenAI"/>
-                        <ComboBoxItem Content="Gemini"/>
-                    </ComboBox>
-
-                    <Label Grid.Row="4" Grid.Column="0" Content="OpenAI Model:" VerticalAlignment="Center"/>
-                    <TextBox Grid.Row="4" Grid.Column="1" Name="txtOpenAiModel" Margin="0,5"/>
-
-                    <Label Grid.Row="5" Grid.Column="0" Content="OpenAI API Key:" VerticalAlignment="Center"/>
-                    <PasswordBox Grid.Row="5" Grid.Column="1" Name="txtOpenAiKey" Margin="0,5"/>
-
-                    <Label Grid.Row="6" Grid.Column="0" Content="Gemini Model:" VerticalAlignment="Center"/>
-                    <TextBox Grid.Row="6" Grid.Column="1" Name="txtGeminiModel" Margin="0,5"/>
-
-                    <Label Grid.Row="7" Grid.Column="0" Content="Gemini API Key:" VerticalAlignment="Center"/>
-                    <PasswordBox Grid.Row="7" Grid.Column="1" Name="txtGeminiKey" Margin="0,5"/>
-
-                    <Button Grid.Row="8" Grid.Column="1" Name="btnSaveSettings" Content="Save Settings" Padding="10,5" Margin="0,20,0,0" HorizontalAlignment="Left" Click="btnSaveSettings_Click"/>
-                </Grid>
-            </ScrollViewer>
-        </TabItem>
-
-        <!-- Audit Tab -->
-        <TabItem Header="Audit">
-            <Grid Margin="10">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-
-                <Grid Grid.Row="0" Margin="0,0,0,10">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="80"/>
-                        <ColumnDefinition Width="200"/>
-                        <ColumnDefinition Width="80"/>
-                        <ColumnDefinition Width="200"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-
-                    <Label Grid.Row="0" Grid.Column="0" Content="User:" VerticalAlignment="Center"/>
-                    <TextBox Grid.Row="0" Grid.Column="1" Name="txtAuditUser" Margin="0,5"/>
-
-                    <Label Grid.Row="0" Grid.Column="2" Content="Action:" VerticalAlignment="Center" Margin="10,0,0,0"/>
-                    <TextBox Grid.Row="0" Grid.Column="3" Name="txtAuditAction" Margin="0,5"/>
-
-                    <StackPanel Grid.Row="0" Grid.Column="4" Orientation="Horizontal" HorizontalAlignment="Right">
-                        <Button Name="btnAuditFilter" Content="Filter" Padding="10,5" Margin="5,0" Click="btnAuditFilter_Click"/>
-                        <Button Name="btnAuditRefresh" Content="Refresh" Padding="10,5" Click="btnAuditRefresh_Click"/>
-                    </StackPanel>
-                </Grid>
-
-                <ListView Grid.Row="1" Name="lvAudit">
-                    <ListView.View>
-                        <GridView>
-                            <GridViewColumn Header="Timestamp" Width="150" DisplayMemberBinding="{Binding Timestamp}"/>
-                            <GridViewColumn Header="User" Width="100" DisplayMemberBinding="{Binding User}"/>
-                            <GridViewColumn Header="Action" Width="120" DisplayMemberBinding="{Binding Action}"/>
-                            <GridViewColumn Header="Document ID" Width="100" DisplayMemberBinding="{Binding DocumentId}"/>
-                            <GridViewColumn Header="Payload" Width="300" DisplayMemberBinding="{Binding Payload}"/>
-                        </GridView>
-                    </ListView.View>
-                </ListView>
-
-                <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,10,0,0">
-                    <Button Name="btnAuditPrev" Content="Previous" Padding="10,5" Margin="5,0" Click="btnAuditPrev_Click"/>
-                    <TextBlock Name="lblAuditPage" Text="Page 1 of 1" VerticalAlignment="Center" Margin="10,0"/>
-                    <Button Name="btnAuditNext" Content="Next" Padding="10,5" Margin="5,0" Click="btnAuditNext_Click"/>
-                </StackPanel>
             </Grid>
         </TabItem>
 
@@ -342,6 +196,152 @@
                     </ListView.View>
                 </ListView>
             </Grid>
+        </TabItem>
+
+        <!-- Audit Tab -->
+        <TabItem Header="Audit">
+            <Grid Margin="10">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <Grid Grid.Row="0" Margin="0,0,0,10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="80"/>
+                        <ColumnDefinition Width="200"/>
+                        <ColumnDefinition Width="80"/>
+                        <ColumnDefinition Width="200"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Label Grid.Row="0" Grid.Column="0" Content="User:" VerticalAlignment="Center"/>
+                    <TextBox Grid.Row="0" Grid.Column="1" Name="txtAuditUser" Margin="0,5"/>
+
+                    <Label Grid.Row="0" Grid.Column="2" Content="Action:" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                    <TextBox Grid.Row="0" Grid.Column="3" Name="txtAuditAction" Margin="0,5"/>
+
+                    <StackPanel Grid.Row="0" Grid.Column="4" Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button Name="btnAuditFilter" Content="Filter" Padding="10,5" Margin="5,0" Click="btnAuditFilter_Click"/>
+                        <Button Name="btnAuditRefresh" Content="Refresh" Padding="10,5" Click="btnAuditRefresh_Click"/>
+                    </StackPanel>
+                </Grid>
+
+                <ListView Grid.Row="1" Name="lvAudit">
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Header="Timestamp" Width="150" DisplayMemberBinding="{Binding Timestamp}"/>
+                            <GridViewColumn Header="User" Width="100" DisplayMemberBinding="{Binding User}"/>
+                            <GridViewColumn Header="Action" Width="120" DisplayMemberBinding="{Binding Action}"/>
+                            <GridViewColumn Header="Document ID" Width="100" DisplayMemberBinding="{Binding DocumentId}"/>
+                            <GridViewColumn Header="Payload" Width="300" DisplayMemberBinding="{Binding Payload}"/>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+
+                <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,10,0,0">
+                    <Button Name="btnAuditPrev" Content="Previous" Padding="10,5" Margin="5,0" Click="btnAuditPrev_Click"/>
+                    <TextBlock Name="lblAuditPage" Text="Page 1 of 1" VerticalAlignment="Center" Margin="10,0"/>
+                    <Button Name="btnAuditNext" Content="Next" Padding="10,5" Margin="5,0" Click="btnAuditNext_Click"/>
+                </StackPanel>
+            </Grid>
+        </TabItem>
+
+        <!-- Import Tab -->
+        <TabItem Header="Import">
+            <Grid Margin="10">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="200"/>
+                </Grid.RowDefinitions>
+
+                <Button Grid.Row="0" Name="btnImportCsv" Content="Import Documents CSV..." Padding="10,5" Margin="0,0,0,10" HorizontalAlignment="Left" Click="btnImportCsv_Click"/>
+                
+                <TextBlock Grid.Row="1" Name="lblImportResult" FontWeight="Bold" Margin="0,0,0,5"/>
+                <TextBlock Grid.Row="2" Name="lblImportNote" Text="CSV Format: code,filename (e.g., ABC-001-XYZ-0001,mydoc.pdf)" Margin="0,0,0,10"/>
+
+                <GroupBox Grid.Row="3" Header="Invalid Entries" Margin="0,0,0,10">
+                    <ListBox Name="lstImportInvalid"/>
+                </GroupBox>
+
+                <StackPanel Grid.Row="4" Orientation="Horizontal" Margin="0,0,0,10">
+                    <CheckBox Name="chkSeedCounters" Content="Show series counters" IsChecked="True" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                    <Button Name="btnSeedSelected" Content="Seed Selected Series" Padding="10,5" Click="btnSeedSelected_Click"/>
+                    <TextBlock Name="lblImportPerSeries" Text="Select series to seed their next counters" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                </StackPanel>
+
+                <ListView Grid.Row="5" Name="lvImportSummary">
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Header="Series" Width="250" DisplayMemberBinding="{Binding SeriesText}"/>
+                            <GridViewColumn Header="Max Number" Width="100" DisplayMemberBinding="{Binding MaxNumber}"/>
+                            <GridViewColumn Header="Next Number" Width="100" DisplayMemberBinding="{Binding NextNumber}"/>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+            </Grid>
+        </TabItem>
+
+        <!-- Settings Tab -->
+        <TabItem Header="Settings">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <Grid Margin="10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="150"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Label Grid.Row="0" Grid.Column="0" Content="Separator:" VerticalAlignment="Center"/>
+                    <TextBox Grid.Row="0" Grid.Column="1" Name="txtSeparator" Margin="0,5"/>
+
+                    <Label Grid.Row="1" Grid.Column="0" Content="Padding Length:" VerticalAlignment="Center"/>
+                    <TextBox Grid.Row="1" Grid.Column="1" Name="txtPadding" Margin="0,5"/>
+
+                    <CheckBox Grid.Row="2" Grid.Column="1" Name="chkSettingsEnableLevel4" Content="Enable Level 4" Margin="0,10"/>
+
+                    <Label Grid.Row="3" Grid.Column="0" Content="AI Provider:" VerticalAlignment="Center"/>
+                    <ComboBox Grid.Row="3" Grid.Column="1" Name="cmbProvider" Margin="0,5">
+                        <ComboBoxItem Content="OpenAI"/>
+                        <ComboBoxItem Content="Gemini"/>
+                    </ComboBox>
+
+                    <Label Grid.Row="4" Grid.Column="0" Content="OpenAI Model:" VerticalAlignment="Center"/>
+                    <TextBox Grid.Row="4" Grid.Column="1" Name="txtOpenAiModel" Margin="0,5"/>
+
+                    <Label Grid.Row="5" Grid.Column="0" Content="OpenAI API Key:" VerticalAlignment="Center"/>
+                    <PasswordBox Grid.Row="5" Grid.Column="1" Name="txtOpenAiKey" Margin="0,5"/>
+
+                    <Label Grid.Row="6" Grid.Column="0" Content="Gemini Model:" VerticalAlignment="Center"/>
+                    <TextBox Grid.Row="6" Grid.Column="1" Name="txtGeminiModel" Margin="0,5"/>
+
+                    <Label Grid.Row="7" Grid.Column="0" Content="Gemini API Key:" VerticalAlignment="Center"/>
+                    <PasswordBox Grid.Row="7" Grid.Column="1" Name="txtGeminiKey" Margin="0,5"/>
+
+                    <Button Grid.Row="8" Grid.Column="1" Name="btnSaveSettings" Content="Save Settings" Padding="10,5" Margin="0,20,0,0" HorizontalAlignment="Left" Click="btnSaveSettings_Click"/>
+                </Grid>
+            </ScrollViewer>
         </TabItem>
     </TabControl>
 </Window>

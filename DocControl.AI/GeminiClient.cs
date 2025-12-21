@@ -17,6 +17,7 @@ public sealed class GeminiClient : IAiClient
     public async Task<AiStructuredResult> GetStructuredCompletionAsync(AiStructuredRequest request, CancellationToken cancellationToken = default)
     {
         var endpoint = new Uri($"{options.Endpoint}{options.Model}:generateContent?key={options.ApiKey}");
+        var prompt = request.SystemInstruction is null ? request.Prompt : $"{request.SystemInstruction}\n\n{request.Prompt}";
         var payload = new
         {
             contents = new[]
@@ -25,7 +26,7 @@ public sealed class GeminiClient : IAiClient
                 {
                     parts = new[]
                     {
-                        new { text = request.SystemInstruction is null ? request.Prompt : $"{request.SystemInstruction}\n\n{request.Prompt}" }
+                        new { text = prompt }
                     }
                 }
             },
@@ -50,7 +51,24 @@ public sealed class GeminiClient : IAiClient
                 candidates.GetArrayLength() > 0)
             {
                 var content = candidates[0].GetProperty("content");
-                return AiStructuredResult.Success(raw, content);
+                if (content.TryGetProperty("parts", out var parts) && parts.ValueKind == JsonValueKind.Array && parts.GetArrayLength() > 0)
+                {
+                    var text = parts[0].GetProperty("text").GetString();
+                    if (!string.IsNullOrWhiteSpace(text))
+                    {
+                        try
+                        {
+                            using var parsedDoc = JsonDocument.Parse(text);
+                            return AiStructuredResult.Success(raw, parsedDoc.RootElement.Clone());
+                        }
+                        catch (JsonException)
+                        {
+                            return AiStructuredResult.Failure("Gemini response text was not valid JSON.", raw);
+                        }
+                    }
+                }
+
+                return AiStructuredResult.Failure("Gemini response missing text content.", raw);
             }
 
             return AiStructuredResult.Failure("Gemini response missing 'candidates' payload.", raw);

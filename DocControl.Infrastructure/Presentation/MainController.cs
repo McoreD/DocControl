@@ -246,6 +246,11 @@ public sealed class MainController
         aiSettings.OpenAiModel = state.OpenAiModel;
         aiSettings.GeminiModel = state.GeminiModel;
 
+        // Save config and keys first
+        await configService.SaveDocumentConfigAsync(documentConfig, cancellationToken).ConfigureAwait(false);
+        await configService.SaveAiSettingsAsync(aiSettings, openAiKey, geminiKey, cancellationToken).ConfigureAwait(false);
+
+        // Rebuild options to pick up newly saved keys
         var refreshed = await configService.BuildAiOptionsAsync(aiSettings, cancellationToken).ConfigureAwait(false);
         aiOptions.DefaultProvider = refreshed.DefaultProvider;
         aiOptions.OpenAi.ApiKey = refreshed.OpenAi.ApiKey;
@@ -254,9 +259,13 @@ public sealed class MainController
         aiOptions.Gemini.ApiKey = refreshed.Gemini.ApiKey;
         aiOptions.Gemini.Model = refreshed.Gemini.Model;
         aiOptions.Gemini.Endpoint = refreshed.Gemini.Endpoint;
+    }
 
-        await configService.SaveDocumentConfigAsync(documentConfig, cancellationToken).ConfigureAwait(false);
-        await configService.SaveAiSettingsAsync(aiSettings, openAiKey, geminiKey, cancellationToken).ConfigureAwait(false);
+    public async Task<NlqResponse?> RecommendWithAiAsync(string query, CancellationToken cancellationToken = default)
+    {
+        var codes = await LoadCodesDisplayAsync(includeLevel4: documentConfig.EnableLevel4, cancellationToken).ConfigureAwait(false);
+        var catalog = codes.Select(c => (c.Level, c.Code, c.Description)).ToList();
+        return await nlqService.RecommendCodeAsync(query, catalog, cancellationToken).ConfigureAwait(false);
     }
 
     private bool TryParseCodeOnly(string code, out CodeSeriesKey key, out int number, out string reason)
