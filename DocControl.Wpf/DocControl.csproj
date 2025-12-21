@@ -17,6 +17,7 @@
     <SignToolPath Condition="'$(SignToolPath)'==''">signtool.exe</SignToolPath>
     <SignTargetPath Condition="'$(AppHostPath)'!=''">$(AppHostPath)</SignTargetPath>
     <SignTargetPath Condition="'$(SignTargetPath)'==''">$(MSBuildProjectDirectory)\bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).exe</SignTargetPath>
+    <PackageProjectUrl>https://github.com/McoreD/DocControl/</PackageProjectUrl>
   </PropertyGroup>
 
   <ItemGroup>
