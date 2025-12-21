@@ -436,6 +436,20 @@ namespace DocControl.Wpf
 
             try
             {
+                // First interpret to show user what was understood
+                var interpretation = await controller.InterpretAsync(query);
+                if (interpretation != null)
+                {
+                    txtNlqResult.Text = $"Document Type: {interpretation.DocumentType}\nOwner: {interpretation.Owner}\n" +
+                                       $"Levels: {interpretation.Level1}/{interpretation.Level2}/{interpretation.Level3}/{interpretation.Level4}\n" +
+                                       $"Free Text: {interpretation.FreeText}";
+                }
+                else
+                {
+                    txtNlqResult.Text = "No interpretation available.";
+                }
+
+                // Then ask AI to pick best codes (or propose new) based on the query and catalog
                 var aiRec = await controller.RecommendWithAiAsync(query);
                 if (aiRec == null)
                 {
@@ -458,7 +472,6 @@ namespace DocControl.Wpf
                 }
                 isPopulatingDropdowns = false;
 
-                // Show recommendation text
                 lblRecommendResult.Text = $"Recommended: {aiRec.Level1}-{aiRec.Level2}-{aiRec.Level3}{(string.IsNullOrWhiteSpace(aiRec.Level4) ? string.Empty : "-" + aiRec.Level4)}";
             }
             catch (Exception ex)

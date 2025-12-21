@@ -23,10 +23,7 @@
                 <TextBox Grid.Row="1" Name="txtNlq" Height="60" TextWrapping="Wrap" AcceptsReturn="True" Margin="0,0,0,10"/>
 
                 <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,10">
-                    <Button Name="btnInterpret" Content="Interpret" Padding="10,5" Margin="0,0,10,0" Click="btnInterpret_Click"/>
-                    <Button Name="btnRecommend" Content="Recommend Code" Padding="10,5" Margin="0,0,10,0" Click="btnRecommend_Click"/>
-                    <Button Name="btnUseSuggested" Content="Use Suggested" Padding="10,5" Margin="0,0,10,0" Click="btnUseSuggested_Click"/>
-                    <Button Name="btnCreateRecommended" Content="Create Document" Padding="10,5" Click="btnCreateRecommended_Click"/>
+                    <Button Name="btnRecommend" Content="Interpret &amp; Recommend" Padding="10,5" Margin="0,0,10,0" Click="btnRecommend_Click"/>
                 </StackPanel>
 
                 <TextBox Grid.Row="3" Name="txtNlqResult" IsReadOnly="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" Margin="0,0,0,10"/>
