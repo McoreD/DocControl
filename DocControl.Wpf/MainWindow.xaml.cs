@@ -783,5 +783,31 @@ namespace DocControl.Wpf
             await controller.SeedSeriesAsync(selectedSummaries);
             MessageBox.Show($"Seeded {selectedSummaries.Count} series counters.", "Seed Complete", MessageBoxButton.OK, MessageBoxImage.Information);
         }
+
+        private void btnDocsCopy_Click(object sender, RoutedEventArgs e)
+        {
+            var item = lvDocs.SelectedItem;
+            if (item == null)
+            {
+                MessageBox.Show("Please select a document first.", "No Selection", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            var itemType = item.GetType();
+            var codeProp = itemType.GetProperty("Code");
+            var freeTextProp = itemType.GetProperty("FreeText");
+            if (codeProp == null)
+            {
+                MessageBox.Show("Unable to read selected document.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            var code = codeProp.GetValue(item)?.ToString() ?? string.Empty;
+            var freeText = freeTextProp?.GetValue(item)?.ToString() ?? string.Empty;
+
+            var combined = string.IsNullOrWhiteSpace(freeText) ? code : $"{code} {freeText}";
+            Clipboard.SetText(combined);
+            MessageBox.Show("Copied to clipboard.", "Copied", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
     }
 }

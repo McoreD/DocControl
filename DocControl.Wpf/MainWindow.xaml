@@ -159,6 +159,7 @@
                     <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right">
                         <Button Name="btnDocsFilter" Content="Filter" Padding="10,5" Margin="5,0" Click="btnDocsFilter_Click"/>
                         <Button Name="btnDocsRefresh" Content="Refresh" Padding="10,5" Margin="5,0" Click="btnDocsRefresh_Click"/>
+                        <Button Name="btnDocsCopy" Content="Copy to Clipboard" Padding="10,5" Margin="5,0" Click="btnDocsCopy_Click"/>
                     </StackPanel>
                 </Grid>
                 
