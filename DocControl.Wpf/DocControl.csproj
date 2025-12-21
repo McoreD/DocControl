@@ -8,6 +8,17 @@
     <UseWPF>true</UseWPF>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <EnableCodeSigning>false</EnableCodeSigning>
+    <SignCertificatePath>$(SIGN_CERT_PATH)</SignCertificatePath>
+    <SignCertificatePassword>$(SIGN_CERT_PASSWORD)</SignCertificatePassword>
+    <TimeStampUrl>http://timestamp.digicert.com</TimeStampUrl>
+    <SignToolPath Condition="'$(SignToolPath)'=='' and '$(SIGN_TOOL_PATH)'!=''">$(SIGN_TOOL_PATH)</SignToolPath>
+    <SignToolPath Condition="'$(SignToolPath)'==''">signtool.exe</SignToolPath>
+    <SignTargetPath Condition="'$(AppHostPath)'!=''">$(AppHostPath)</SignTargetPath>
+    <SignTargetPath Condition="'$(SignTargetPath)'==''">$(MSBuildProjectDirectory)\bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).exe</SignTargetPath>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\DocControl.Core\DocControl.Core.csproj" />
     <ProjectReference Include="..\DocControl.Infrastructure\DocControl.Infrastructure.csproj" />
@@ -21,5 +32,10 @@
   <ItemGroup>
     <Resource Include="..\Ref\Logo.png" Link="Ref/Logo.png" />
   </ItemGroup>
+
+  <Target Name="SignAppExecutable" AfterTargets="Build" Condition="'$(EnableCodeSigning)'=='true'">
+    <Message Importance="High" Text="Code signing target: $(SignTargetPath) with cert: $(SignCertificatePath) using signtool: $(SignToolPath)" />
+    <Exec Command="&quot;$(SignToolPath)&quot; sign /f &quot;$(SignCertificatePath)&quot; /p &quot;$(SignCertificatePassword)&quot; /t $(TimeStampUrl) /fd sha256 &quot;$(SignTargetPath)&quot;" />
+  </Target>
 
 </Project>
