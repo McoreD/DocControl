@@ -23,8 +23,12 @@ namespace DocControl.Wpf
 
             var services = new ServiceCollection();
 
-            var dbPath = Path.Combine(AppContext.BaseDirectory, "doccontrol.db");
-            var settingsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "DocControl", "settings.json");
+            var userDocFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            var appDataFolder = Path.Combine(userDocFolder, "DocControl");
+            Directory.CreateDirectory(appDataFolder);
+
+            var dbPath = Path.Combine(appDataFolder, "doccontrol.db");
+            var settingsPath = Path.Combine(appDataFolder, "settings.json");
             var dbFactory = new DbConnectionFactory(dbPath);
             var initializer = new DatabaseInitializer(dbFactory);
             await initializer.EnsureCreatedAsync();
