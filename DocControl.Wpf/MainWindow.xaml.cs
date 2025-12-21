@@ -260,6 +260,99 @@ namespace DocControl.Wpf
             await LoadCodesDisplayAsync();
         }
 
+        private async void btnDeleteCode_Click(object sender, RoutedEventArgs e)
+        {
+            if (lvCodes.SelectedItem == null)
+            {
+                MessageBox.Show("Please select a code to delete.", "No Selection", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var selectedItem = lvCodes.SelectedItem;
+            var itemType = selectedItem.GetType();
+            
+            var levelProperty = itemType.GetProperty("Level");
+            var codeProperty = itemType.GetProperty("Code");
+            
+            if (levelProperty == null || codeProperty == null)
+            {
+                MessageBox.Show("Unable to retrieve code information.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+            
+            var level = (int)levelProperty.GetValue(selectedItem)!;
+            var code = (string)codeProperty.GetValue(selectedItem)!;
+
+            var result = MessageBox.Show(
+                $"Are you sure you want to delete Level {level} code '{code}'?\n\nThis action cannot be undone.",
+                "Confirm Delete",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (result != MessageBoxResult.Yes)
+                return;
+
+            try
+            {
+                await controller.DeleteCodeAsync(level, code);
+                MessageBox.Show("Code deleted successfully.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                
+                await LoadCodesDisplayAsync();
+                await PopulateLevel1CodesAsync();
+                await PopulateLevel2CodesAsync();
+                await PopulateLevel3CodesAsync();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to delete code: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private async void btnPurgeCodes_Click(object sender, RoutedEventArgs e)
+        {
+            var result = MessageBox.Show(
+                "WARNING: This will delete ALL codes from the system!\n\n" +
+                "This action cannot be undone. Are you absolutely sure you want to continue?",
+                "Confirm Purge All Codes",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (result != MessageBoxResult.Yes)
+                return;
+
+            // Double confirmation for such a destructive action
+            var confirmResult = MessageBox.Show(
+                "This is your final warning!\n\n" +
+                "All codes will be permanently deleted. Click Yes to proceed.",
+                "Final Confirmation",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Stop);
+
+            if (confirmResult != MessageBoxResult.Yes)
+                return;
+
+            try
+            {
+                await controller.PurgeAllCodesAsync();
+                MessageBox.Show("All codes have been purged from the system.", "Purge Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+                
+                await LoadCodesDisplayAsync();
+                await PopulateLevel1CodesAsync();
+                await PopulateLevel2CodesAsync();
+                await PopulateLevel3CodesAsync();
+                
+                // Clear the combo boxes
+                cmbLevel1.Text = string.Empty;
+                cmbLevel2.Text = string.Empty;
+                cmbLevel3.Text = string.Empty;
+                cmbLevel4.Text = string.Empty;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to purge codes: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
         private async void btnImportCsv_Click(object sender, RoutedEventArgs e)
         {
             var dialog = new OpenFileDialog

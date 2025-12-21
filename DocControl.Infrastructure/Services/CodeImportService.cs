@@ -25,12 +25,12 @@ public sealed class CodeImportService
 
         // Skip header row if it exists
         var dataLines = lines.Skip(1);
-        var codeSeriesData = new List<(CodeSeriesKey key, int maxNumber)>();
+        var codeSeriesData = new List<(CodeSeriesKey key, string description, int maxNumber)>();
 
         foreach (var line in dataLines)
         {
             var parts = ParseCsvLine(line);
-            if (parts.Length < 3) continue;
+            if (parts.Length < 2) continue;
 
             if (!int.TryParse(parts[0].Trim(), out var level) || level < 1 || level > 4)
             {
@@ -39,7 +39,8 @@ public sealed class CodeImportService
             }
 
             var code = parts[1].Trim();
-            var description = parts[2].Trim();
+            // Description is everything after the second comma (parts[2] onwards joined)
+            var description = parts.Length > 2 ? string.Join(",", parts.Skip(2)).Trim() : "";
 
             if (string.IsNullOrWhiteSpace(code))
             {
@@ -50,7 +51,7 @@ public sealed class CodeImportService
             try
             {
                 var key = CreateCodeSeriesKey(level, code);
-                codeSeriesData.Add((key, 1)); // Start with NextNumber = 1
+                codeSeriesData.Add((key, description, 1)); // Start with NextNumber = 1
                 result.SuccessCount++;
             }
             catch (Exception ex)

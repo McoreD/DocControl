@@ -111,8 +111,8 @@ public sealed class MainController
         var valid = 0;
         var invalid = 0;
         var errors = new List<string>();
-        var toSeed = new List<(CodeSeriesKey key, int maxNumber)>();
-        var toImport = new List<(CodeSeriesKey key, int number, string fileName)>();
+        var toSeed = new List<(CodeSeriesKey key, string description, int maxNumber)>();
+        var toImport = new List<(CodeSeriesKey key, int number, string freeText, string fileName)>();
 
         foreach (var entry in entries)
         {
@@ -124,10 +124,11 @@ public sealed class MainController
             }
 
             valid++;
-            toSeed.Add((key, number));
+            toSeed.Add((key, string.Empty, number));
 
-            var fileName = string.IsNullOrWhiteSpace(entry.FileName) ? entry.Code : entry.FileName;
-            toImport.Add((key, number, fileName));
+            var freeText = string.IsNullOrWhiteSpace(entry.FileName) ? string.Empty : entry.FileName;
+            var fileName = entry.Code;
+            toImport.Add((key, number, freeText, fileName));
         }
 
         if (toSeed.Count > 0)
@@ -135,9 +136,9 @@ public sealed class MainController
             await codeSeriesRepository.SeedNextNumbersAsync(toSeed, cancellationToken).ConfigureAwait(false);
         }
 
-        foreach (var (key, number, fileName) in toImport)
+        foreach (var (key, number, freeText, fileName) in toImport)
         {
-            await documentRepository.UpsertImportedAsync(key, number, fileName, createdBy, DateTime.UtcNow, cancellationToken).ConfigureAwait(false);
+            await documentRepository.UpsertImportedAsync(key, number, freeText, fileName, createdBy, DateTime.UtcNow, cancellationToken).ConfigureAwait(false);
         }
 
         var summaries = toImport
@@ -196,19 +197,19 @@ public sealed class MainController
     {
         var items = new List<CodeDisplayItem>();
 
-        var level1Codes = await codeSeriesRepository.GetLevel1CodesAsync(cancellationToken).ConfigureAwait(false);
-        items.AddRange(level1Codes.Select(c => new CodeDisplayItem(1, c, "Level 1 Code")));
+        var level1Codes = await codeSeriesRepository.GetLevel1CodesWithDescriptionAsync(cancellationToken).ConfigureAwait(false);
+        items.AddRange(level1Codes.Select(c => new CodeDisplayItem(1, c.Code, c.Description ?? "")));
 
-        var level2Codes = await codeSeriesRepository.GetLevel2CodesAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
-        items.AddRange(level2Codes.Select(c => new CodeDisplayItem(2, c, "Level 2 Code")));
+        var level2Codes = await codeSeriesRepository.GetLevel2CodesWithDescriptionAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+        items.AddRange(level2Codes.Select(c => new CodeDisplayItem(2, c.Code, c.Description ?? "")));
 
-        var level3Codes = await codeSeriesRepository.GetLevel3CodesAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
-        items.AddRange(level3Codes.Select(c => new CodeDisplayItem(3, c, "Level 3 Code")));
+        var level3Codes = await codeSeriesRepository.GetLevel3CodesWithDescriptionAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+        items.AddRange(level3Codes.Select(c => new CodeDisplayItem(3, c.Code, c.Description ?? "")));
 
         if (includeLevel4 && documentConfig.EnableLevel4)
         {
-            var level4Codes = await codeSeriesRepository.GetLevel4CodesAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
-            items.AddRange(level4Codes.Select(c => new CodeDisplayItem(4, c, "Level 4 Code")));
+            var level4Codes = await codeSeriesRepository.GetLevel4CodesWithDescriptionAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+            items.AddRange(level4Codes.Select(c => new CodeDisplayItem(4, c.Code, c.Description ?? "")));
         }
 
         return items;
@@ -216,6 +217,12 @@ public sealed class MainController
 
     public Task<CodeImportResult> ImportCodesAsync(string csvContent, CancellationToken cancellationToken = default)
         => codeImportService.ImportCodesFromCsvAsync(csvContent, cancellationToken);
+
+    public Task DeleteCodeAsync(int level, string code, CancellationToken cancellationToken = default)
+        => codeSeriesRepository.DeleteCodeAsync(level, code, cancellationToken);
+
+    public Task PurgeAllCodesAsync(CancellationToken cancellationToken = default)
+        => codeSeriesRepository.PurgeAllCodesAsync(cancellationToken);
 
     public SettingsState LoadSettings()
     {

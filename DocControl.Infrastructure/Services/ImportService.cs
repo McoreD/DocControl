@@ -45,7 +45,7 @@ public sealed class ImportService
 
         if (seedCounters && summaries.Count > 0)
         {
-            var grouped = summaries.Select(s => (s.SeriesKey, max: s.MaxNumber)).ToList();
+            var grouped = summaries.Select(s => (s.SeriesKey, description: string.Empty, max: s.MaxNumber)).ToList();
             await seriesRepo.SeedNextNumbersAsync(grouped, cancellationToken).ConfigureAwait(false);
         }
 
@@ -54,7 +54,7 @@ public sealed class ImportService
 
     public async Task SeedAsync(IEnumerable<ImportSeriesSummary> summaries, CancellationToken cancellationToken = default)
     {
-        var grouped = summaries.Select(s => (s.SeriesKey, max: s.MaxNumber)).ToList();
+        var grouped = summaries.Select(s => (s.SeriesKey, description: string.Empty, max: s.MaxNumber)).ToList();
         if (grouped.Count == 0) return;
         await seriesRepo.SeedNextNumbersAsync(grouped, cancellationToken).ConfigureAwait(false);
     }

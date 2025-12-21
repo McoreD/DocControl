@@ -209,7 +209,7 @@ public sealed class DocumentRepository
         await tx.CommitAsync(cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task UpsertImportedAsync(CodeSeriesKey key, int number, string fileName, string createdBy, DateTime createdAtUtc, CancellationToken cancellationToken = default)
+    public async Task UpsertImportedAsync(CodeSeriesKey key, int number, string freeText, string fileName, string createdBy, DateTime createdAtUtc, CancellationToken cancellationToken = default)
     {
         await using var conn = factory.Create();
         await conn.OpenAsync(cancellationToken).ConfigureAwait(false);
@@ -223,7 +223,7 @@ public sealed class DocumentRepository
                 $l3,
                 $l4,
                 $num,
-                NULL,
+                $free,
                 $file,
                 $by,
                 $at,
@@ -232,6 +232,7 @@ public sealed class DocumentRepository
             )
             ON CONFLICT(Level1, Level2, Level3, Level4, Number)
             DO UPDATE SET
+                FreeText = excluded.FreeText,
                 FileName = excluded.FileName,
                 CreatedBy = excluded.CreatedBy,
                 CreatedAt = excluded.CreatedAt;
@@ -243,6 +244,7 @@ public sealed class DocumentRepository
         cmd.Parameters.AddWithValue("$l4", (object?)key.Level4 ?? DBNull.Value);
         cmd.Parameters.AddWithValue("$l4OrNull", (object?)key.Level4 ?? DBNull.Value);
         cmd.Parameters.AddWithValue("$num", number);
+        cmd.Parameters.AddWithValue("$free", (object?)freeText ?? DBNull.Value);
         cmd.Parameters.AddWithValue("$file", fileName);
         cmd.Parameters.AddWithValue("$by", createdBy);
         cmd.Parameters.AddWithValue("$at", createdAtUtc.ToString("O"));

@@ -66,7 +66,9 @@
 
                 <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10">
                     <Button Name="btnCodesImportCsv" Content="Import CSV..." Padding="10,5" Margin="0,0,10,0" Click="btnCodesImportCsv_Click"/>
-                    <Button Name="btnCodesRefresh" Content="Refresh" Padding="10,5" Click="btnCodesRefresh_Click"/>
+                    <Button Name="btnCodesRefresh" Content="Refresh" Padding="10,5" Margin="0,0,10,0" Click="btnCodesRefresh_Click"/>
+                    <Button Name="btnDeleteCode" Content="Delete Selected" Padding="10,5" Margin="0,0,10,0" Click="btnDeleteCode_Click"/>
+                    <Button Name="btnPurgeCodes" Content="Purge All Codes" Padding="10,5" Background="#FFCC0000" Foreground="White" Click="btnPurgeCodes_Click"/>
                 </StackPanel>
 
                 <TextBlock Grid.Row="1" Name="lblCodesInfo" Text="Hierarchical codes used in document generation" Margin="0,0,0,10"/>

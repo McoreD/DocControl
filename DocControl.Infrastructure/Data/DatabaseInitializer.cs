@@ -31,6 +31,7 @@ public sealed class DatabaseInitializer
             Level2 TEXT NOT NULL,
             Level3 TEXT NOT NULL,
             Level4 TEXT,
+            Description TEXT,
             NextNumber INTEGER NOT NULL DEFAULT 1,
             UNIQUE(Level1, Level2, Level3, Level4)
         );
@@ -64,5 +65,37 @@ public sealed class DatabaseInitializer
         ";
 
         await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+        
+        // Run migrations
+        await MigrateAsync(conn, cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task MigrateAsync(SqliteConnection conn, CancellationToken cancellationToken)
+    {
+        // Check if Description column exists in CodeSeries table
+        var checkCmd = conn.CreateCommand();
+        checkCmd.CommandText = "PRAGMA table_info(CodeSeries)";
+        
+        bool hasDescriptionColumn = false;
+        await using (var reader = await checkCmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false))
+        {
+            while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+            {
+                var columnName = reader.GetString(1); // Column name is at index 1
+                if (columnName == "Description")
+                {
+                    hasDescriptionColumn = true;
+                    break;
+                }
+            }
+        }
+
+        // Add Description column if it doesn't exist
+        if (!hasDescriptionColumn)
+        {
+            var alterCmd = conn.CreateCommand();
+            alterCmd.CommandText = "ALTER TABLE CodeSeries ADD COLUMN Description TEXT";
+            await alterCmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+        }
     }
 }

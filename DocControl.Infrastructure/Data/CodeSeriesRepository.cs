@@ -12,26 +12,29 @@ public sealed class CodeSeriesRepository
         this.factory = factory;
     }
 
-    public async Task SeedNextNumbersAsync(IEnumerable<(CodeSeriesKey key, int maxNumber)> seriesMax, CancellationToken cancellationToken = default)
+    public async Task SeedNextNumbersAsync(IEnumerable<(CodeSeriesKey key, string description, int maxNumber)> seriesMax, CancellationToken cancellationToken = default)
     {
         await using var conn = factory.Create();
         await conn.OpenAsync(cancellationToken).ConfigureAwait(false);
         await using var tx = (SqliteTransaction)await conn.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
 
-        foreach (var (key, max) in seriesMax)
+        foreach (var (key, description, max) in seriesMax)
         {
             var upsert = conn.CreateCommand();
             upsert.Transaction = tx;
             upsert.CommandText = @"
-                INSERT INTO CodeSeries (Level1, Level2, Level3, Level4, NextNumber)
-                VALUES ($l1, $l2, $l3, $l4, $next)
+                INSERT INTO CodeSeries (Level1, Level2, Level3, Level4, Description, NextNumber)
+                VALUES ($l1, $l2, $l3, $l4, $desc, $next)
                 ON CONFLICT(Level1, Level2, Level3, Level4)
-                DO UPDATE SET NextNumber = CASE WHEN excluded.NextNumber > CodeSeries.NextNumber THEN excluded.NextNumber ELSE CodeSeries.NextNumber END;
+                DO UPDATE SET 
+                    Description = COALESCE(excluded.Description, CodeSeries.Description),
+                    NextNumber = CASE WHEN excluded.NextNumber > CodeSeries.NextNumber THEN excluded.NextNumber ELSE CodeSeries.NextNumber END;
             ";
             upsert.Parameters.AddWithValue("$l1", key.Level1);
             upsert.Parameters.AddWithValue("$l2", key.Level2);
             upsert.Parameters.AddWithValue("$l3", key.Level3);
             upsert.Parameters.AddWithValue("$l4", (object?)key.Level4 ?? DBNull.Value);
+            upsert.Parameters.AddWithValue("$desc", (object?)description ?? DBNull.Value);
             upsert.Parameters.AddWithValue("$next", max + 1);
             await upsert.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
         }
@@ -52,6 +55,26 @@ public sealed class CodeSeriesRepository
         while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
         {
             codes.Add(reader.GetString(0));
+        }
+
+        return codes;
+    }
+
+    public async Task<List<(string Code, string? Description)>> GetLevel1CodesWithDescriptionAsync(CancellationToken cancellationToken = default)
+    {
+        await using var conn = factory.Create();
+        await conn.OpenAsync(cancellationToken).ConfigureAwait(false);
+
+        var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT DISTINCT Level1, Description FROM CodeSeries WHERE Level1 != '' ORDER BY Level1";
+
+        var codes = new List<(string Code, string? Description)>();
+        await using var reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+        {
+            var code = reader.GetString(0);
+            var description = reader.IsDBNull(1) ? null : reader.GetString(1);
+            codes.Add((code, description));
         }
 
         return codes;
@@ -78,6 +101,34 @@ public sealed class CodeSeriesRepository
         while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
         {
             codes.Add(reader.GetString(0));
+        }
+
+        return codes;
+    }
+
+    public async Task<List<(string Code, string? Description)>> GetLevel2CodesWithDescriptionAsync(string? level1Filter = null, CancellationToken cancellationToken = default)
+    {
+        await using var conn = factory.Create();
+        await conn.OpenAsync(cancellationToken).ConfigureAwait(false);
+
+        var cmd = conn.CreateCommand();
+        if (string.IsNullOrWhiteSpace(level1Filter))
+        {
+            cmd.CommandText = "SELECT DISTINCT Level2, Description FROM CodeSeries WHERE Level2 != '' ORDER BY Level2";
+        }
+        else
+        {
+            cmd.CommandText = "SELECT DISTINCT Level2, Description FROM CodeSeries WHERE Level1 = $l1 AND Level2 != '' ORDER BY Level2";
+            cmd.Parameters.AddWithValue("$l1", level1Filter);
+        }
+
+        var codes = new List<(string Code, string? Description)>();
+        await using var reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+        {
+            var code = reader.GetString(0);
+            var description = reader.IsDBNull(1) ? null : reader.GetString(1);
+            codes.Add((code, description));
         }
 
         return codes;
@@ -110,6 +161,40 @@ public sealed class CodeSeriesRepository
         while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
         {
             codes.Add(reader.GetString(0));
+        }
+
+        return codes;
+    }
+
+    public async Task<List<(string Code, string? Description)>> GetLevel3CodesWithDescriptionAsync(string? level1Filter = null, string? level2Filter = null, CancellationToken cancellationToken = default)
+    {
+        await using var conn = factory.Create();
+        await conn.OpenAsync(cancellationToken).ConfigureAwait(false);
+
+        var cmd = conn.CreateCommand();
+        var whereConditions = new List<string> { "Level3 != ''" };
+        
+        if (!string.IsNullOrWhiteSpace(level1Filter))
+        {
+            whereConditions.Add("Level1 = $l1");
+            cmd.Parameters.AddWithValue("$l1", level1Filter);
+        }
+        
+        if (!string.IsNullOrWhiteSpace(level2Filter))
+        {
+            whereConditions.Add("Level2 = $l2");
+            cmd.Parameters.AddWithValue("$l2", level2Filter);
+        }
+
+        cmd.CommandText = $"SELECT DISTINCT Level3, Description FROM CodeSeries WHERE {string.Join(" AND ", whereConditions)} ORDER BY Level3";
+
+        var codes = new List<(string Code, string? Description)>();
+        await using var reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+        {
+            var code = reader.GetString(0);
+            var description = reader.IsDBNull(1) ? null : reader.GetString(1);
+            codes.Add((code, description));
         }
 
         return codes;
@@ -155,5 +240,103 @@ public sealed class CodeSeriesRepository
         }
 
         return codes;
+    }
+
+    public async Task<List<(string Code, string? Description)>> GetLevel4CodesWithDescriptionAsync(string? level1Filter = null, string? level2Filter = null, string? level3Filter = null, CancellationToken cancellationToken = default)
+    {
+        await using var conn = factory.Create();
+        await conn.OpenAsync(cancellationToken).ConfigureAwait(false);
+
+        var cmd = conn.CreateCommand();
+        var whereConditions = new List<string> { "Level4 IS NOT NULL AND Level4 != ''" };
+        
+        if (!string.IsNullOrWhiteSpace(level1Filter))
+        {
+            whereConditions.Add("Level1 = $l1");
+            cmd.Parameters.AddWithValue("$l1", level1Filter);
+        }
+        
+        if (!string.IsNullOrWhiteSpace(level2Filter))
+        {
+            whereConditions.Add("Level2 = $l2");
+            cmd.Parameters.AddWithValue("$l2", level2Filter);
+        }
+        
+        if (!string.IsNullOrWhiteSpace(level3Filter))
+        {
+            whereConditions.Add("Level3 = $l3");
+            cmd.Parameters.AddWithValue("$l3", level3Filter);
+        }
+
+        cmd.CommandText = $"SELECT DISTINCT Level4, Description FROM CodeSeries WHERE {string.Join(" AND ", whereConditions)} ORDER BY Level4";
+
+        var codes = new List<(string Code, string? Description)>();
+        await using var reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+        {
+            var value = reader.GetValue(0);
+            if (value != DBNull.Value)
+            {
+                var code = reader.GetString(0);
+                var description = reader.IsDBNull(1) ? null : reader.GetString(1);
+                codes.Add((code, description));
+            }
+        }
+
+        return codes;
+    }
+
+    public async Task DeleteCodeAsync(int level, string code, CancellationToken cancellationToken = default)
+    {
+        await using var conn = factory.Create();
+        await conn.OpenAsync(cancellationToken).ConfigureAwait(false);
+
+        // Build the WHERE clause based on level
+        var whereClause = level switch
+        {
+            1 => "Level1 = $code AND Level2 = '' AND Level3 = '' AND Level4 IS NULL",
+            2 => "Level2 = $code AND Level1 = '' AND Level3 = '' AND Level4 IS NULL",
+            3 => "Level3 = $code AND Level1 = '' AND Level2 = '' AND Level4 IS NULL",
+            4 => "Level4 = $code AND Level1 = '' AND Level2 = '' AND Level3 = ''",
+            _ => throw new ArgumentException($"Invalid level: {level}")
+        };
+
+        // Check if there are any documents that reference this code series
+        var checkCmd = conn.CreateCommand();
+        checkCmd.CommandText = $"SELECT COUNT(*) FROM Documents WHERE {whereClause}";
+        checkCmd.Parameters.AddWithValue("$code", code);
+        var documentCount = Convert.ToInt32(await checkCmd.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false));
+        
+        if (documentCount > 0)
+        {
+            throw new InvalidOperationException($"Cannot delete Level {level} code '{code}' because there are {documentCount} document(s) that reference it. Please delete those documents first.");
+        }
+
+        var cmd = conn.CreateCommand();
+        cmd.CommandText = $"DELETE FROM CodeSeries WHERE {whereClause}";
+        cmd.Parameters.AddWithValue("$code", code);
+        
+        await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task PurgeAllCodesAsync(CancellationToken cancellationToken = default)
+    {
+        await using var conn = factory.Create();
+        await conn.OpenAsync(cancellationToken).ConfigureAwait(false);
+
+        // Check if there are any documents that reference code series
+        var checkCmd = conn.CreateCommand();
+        checkCmd.CommandText = "SELECT COUNT(*) FROM Documents";
+        var documentCount = Convert.ToInt32(await checkCmd.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false));
+        
+        if (documentCount > 0)
+        {
+            throw new InvalidOperationException($"Cannot purge codes because there are {documentCount} document(s) that reference them. Please delete all documents first before purging codes.");
+        }
+
+        var cmd = conn.CreateCommand();
+        cmd.CommandText = "DELETE FROM CodeSeries";
+        
+        await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
     }
 }
