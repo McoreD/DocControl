@@ -19,6 +19,7 @@ public sealed class NlqService
         var schema = JsonDocument.Parse("""
 {
   "type": "object",
+  "additionalProperties": false,
   "properties": {
     "documentType": { "type": "string" },
     "owner": { "type": "string" },
@@ -28,7 +29,7 @@ public sealed class NlqService
     "level4": { "type": "string" },
     "freeText": { "type": "string" }
   },
-  "required": ["level1", "level2", "level3", "freeText"]
+  "required": ["documentType", "owner", "level1", "level2", "level3", "level4", "freeText"]
 }
 """).RootElement.Clone();
 
@@ -79,7 +80,7 @@ public sealed class NlqService
         }
     }
 
-    public async Task<NlqResponse?> RecommendCodeAsync(string query, IReadOnlyList<(int Level, string Code, string Description)> codes, CancellationToken cancellationToken = default)
+    public async Task<NlqResponse?> RecommendCodeAsync(string query, IReadOnlyList<(int Level, string Code, String Description)> codes, CancellationToken cancellationToken = default)
     {
         var catalog = codes.Select(c => new { c.Level, c.Code, c.Description }).ToList();
         var catalogJson = JsonSerializer.Serialize(catalog);
@@ -87,6 +88,7 @@ public sealed class NlqService
         var schema = JsonDocument.Parse("""
 {
   "type": "object",
+  "additionalProperties": false,
   "properties": {
     "level1": { "type": "string" },
     "level2": { "type": "string" },
@@ -95,7 +97,7 @@ public sealed class NlqService
     "freeText": { "type": "string" },
     "reason": { "type": "string" }
   },
-  "required": ["level1", "level2", "level3", "freeText"]
+  "required": ["level1", "level2", "level3", "level4", "freeText", "reason"]
 }
 """).RootElement.Clone();
 

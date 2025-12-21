@@ -10,8 +10,8 @@ public sealed class AiClientOptions
 public sealed class OpenAiOptions
 {
     public string ApiKey { get; set; } = string.Empty;
-    public string Model { get; set; } = "gpt-5.2";
-    public Uri Endpoint { get; set; } = new("https://api.openai.com/v1/responses");
+    public string Model { get; set; } = "gpt-4.1";
+    public Uri Endpoint { get; set; } = new("https://api.openai.com/v1/chat/completions");
 }
 
 public sealed class GeminiOptions
