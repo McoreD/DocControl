@@ -260,6 +260,44 @@ namespace DocControl.Wpf
             await LoadCodesDisplayAsync();
         }
 
+        private async void btnEditCodes_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                // Load all codes from the database
+                var allCodes = await controller.LoadCodesDisplayAsync(true);
+                
+                // Convert to CodeEditItem collection
+                var editableCodes = new System.Collections.ObjectModel.ObservableCollection<CodeEditItem>(
+                    allCodes.Select(c => new CodeEditItem
+                    {
+                        Level = c.Level,
+                        Code = c.Code,
+                        Description = c.Description,
+                        IsNew = false
+                    })
+                );
+
+                // Open the edit dialog
+                var dialog = new CodeEditDialog(controller, editableCodes)
+                {
+                    Owner = this
+                };
+
+                dialog.ShowDialog();
+
+                // Refresh the codes display after the dialog closes
+                await LoadCodesDisplayAsync();
+                await PopulateLevel1CodesAsync();
+                await PopulateLevel2CodesAsync();
+                await PopulateLevel3CodesAsync();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to open code editor: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
         private async void btnDeleteCode_Click(object sender, RoutedEventArgs e)
         {
             if (lvCodes.SelectedItem == null)
