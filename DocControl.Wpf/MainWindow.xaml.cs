@@ -205,6 +205,11 @@ namespace DocControl.Wpf
             {
                 var result = await controller.GenerateDocumentAsync(key, freeText, Environment.UserName, ext);
                 lblGenerateResult.Text = $"Created: {result.FileName} (audited)";
+
+                if (chkCopyAfterGenerate.IsChecked == true)
+                {
+                    Clipboard.SetText(result.FileName);
+                }
             }
             catch (Exception ex)
             {

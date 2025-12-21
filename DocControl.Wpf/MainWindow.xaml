@@ -1,4 +1,4 @@
-﻿<Window x:Class="DocControl.Wpf.MainWindow"
+<Window x:Class="DocControl.Wpf.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -70,7 +70,10 @@
                 <TextBox Grid.Row="5" Grid.Column="1" Name="txtFreeText" Margin="0,5"/>
 
                 <Label Grid.Row="6" Grid.Column="0" Content="Extension:" VerticalAlignment="Center"/>
-                <TextBox Grid.Row="6" Grid.Column="1" Name="txtExtension" Margin="0,5"/>
+                <StackPanel Grid.Row="6" Grid.Column="1" Orientation="Horizontal" Margin="0,5">
+                    <TextBox Name="txtExtension" Width="120" Margin="0,0,10,0"/>
+                    <CheckBox Name="chkCopyAfterGenerate" Content="Copy file name after generate" VerticalAlignment="Center"/>
+                </StackPanel>
 
                 <Button Grid.Row="7" Grid.Column="1" Name="btnGenerate" Content="Generate Document" Margin="0,10" Padding="10,5" Click="btnGenerate_Click" HorizontalAlignment="Left"/>
 
@@ -123,7 +126,6 @@
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <!-- First row: Level filters -->
                 <Grid Grid.Row="0" Margin="0,0,0,10">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="80"/>
@@ -145,7 +147,6 @@
                     <TextBox Grid.Column="5" Name="txtDocsFilterLevel3" Margin="0,5"/>
                 </Grid>
 
-                <!-- Second row: File Name and buttons -->
                 <Grid Grid.Row="1" Margin="0,0,0,10">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="80"/>
