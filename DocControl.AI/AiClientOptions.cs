@@ -10,7 +10,7 @@ public sealed class AiClientOptions
 public sealed class OpenAiOptions
 {
     public string ApiKey { get; set; } = string.Empty;
-    public string Model { get; set; } = "gpt-4.1";
+    public string Model { get; set; } = "gpt-5.1";
     public Uri Endpoint { get; set; } = new("https://api.openai.com/v1/chat/completions");
 }
 
