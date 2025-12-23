@@ -39,6 +39,7 @@ Level,Code,Code Description
 3,INV,"Invoice"
 3,ITN,"Itinerary"
 3,LBD,"Legally Binding Document"
+3,LLN,"Lessons Learnt"
 3,LTR,"Letter"
 3,MOM,"Minutes of Meeting"
 3,OPT,"Optioneering"
