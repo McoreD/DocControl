@@ -99,6 +99,7 @@
                 <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10">
                     <Button Name="btnEditCodes" Content="Edit Codes..." Padding="10,5" Margin="0,0,10,0" Click="btnEditCodes_Click" Background="#FF4CAF50" Foreground="White"/>
                     <Button Name="btnCodesImportCsv" Content="Import CSV..." Padding="10,5" Margin="0,0,10,0" Click="btnCodesImportCsv_Click"/>
+                    <Button Name="btnCodesExportCsv" Content="Export CSV..." Padding="10,5" Margin="0,0,10,0" Click="btnCodesExportCsv_Click"/>
                     <Button Name="btnCodesRefresh" Content="Refresh" Padding="10,5" Margin="0,0,10,0" Click="btnCodesRefresh_Click"/>
                     <Button Name="btnDeleteCode" Content="Delete Selected" Padding="10,5" Margin="0,0,10,0" Click="btnDeleteCode_Click"/>
                     <Button Name="btnPurgeCodes" Content="Purge All Codes" Padding="10,5" Background="#FFCC0000" Foreground="White" Click="btnPurgeCodes_Click"/>
@@ -163,6 +164,7 @@
                     <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right">
                         <Button Name="btnDocsFilter" Content="Filter" Padding="10,5" Margin="5,0" Click="btnDocsFilter_Click"/>
                         <Button Name="btnDocsRefresh" Content="Refresh" Padding="10,5" Margin="5,0" Click="btnDocsRefresh_Click"/>
+                        <Button Name="btnDocsExport" Content="Export CSV..." Padding="10,5" Margin="5,0" Click="btnDocsExport_Click"/>
                         <Button Name="btnDocsCopy" Content="Copy to Clipboard" Padding="10,5" Margin="5,0" Click="btnDocsCopy_Click"/>
                     </StackPanel>
                 </Grid>

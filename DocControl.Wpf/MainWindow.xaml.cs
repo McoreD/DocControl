@@ -11,6 +11,7 @@ using Microsoft.Win32;
 using System.ComponentModel;
 using System.Windows.Data;
 using System.Linq;
+using System.Text;
 
 namespace DocControl.Wpf
 {
@@ -843,6 +844,67 @@ namespace DocControl.Wpf
             var combined = string.IsNullOrWhiteSpace(freeText) ? code : $"{code} {freeText}";
             Clipboard.SetText(combined);
             MessageBox.Show("Copied to clipboard.", "Copied", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        private async void btnCodesExportCsv_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new SaveFileDialog
+            {
+                Filter = "CSV files|*.csv|All files|*.*",
+                FileName = "codes.csv",
+                Title = "Export Codes"
+            };
+
+            if (dialog.ShowDialog() != true) return;
+
+            try
+            {
+                var items = await controller.LoadCodesDisplayAsync(documentConfig.EnableLevel4);
+                var sb = new StringBuilder();
+                sb.AppendLine("Level,Code,Code Description");
+                foreach (var item in items)
+                {
+                    var desc = item.Description?.Replace("\"", "\"\"") ?? string.Empty;
+                    sb.AppendLine($"{item.Level},{item.Code},\"{desc}\"");
+                }
+
+                await File.WriteAllTextAsync(dialog.FileName, sb.ToString());
+                MessageBox.Show("Codes exported.", "Export", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Export failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private async void btnDocsExport_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new SaveFileDialog
+            {
+                Filter = "CSV files|*.csv|All files|*.*",
+                FileName = "documents.csv",
+                Title = "Export Documents"
+            };
+
+            if (dialog.ShowDialog() != true) return;
+
+            try
+            {
+                string? level1Filter = string.IsNullOrWhiteSpace(txtDocsFilterLevel1.Text) ? null : txtDocsFilterLevel1.Text.Trim();
+                string? level2Filter = string.IsNullOrWhiteSpace(txtDocsFilterLevel2.Text) ? null : txtDocsFilterLevel2.Text.Trim();
+                string? level3Filter = string.IsNullOrWhiteSpace(txtDocsFilterLevel3.Text) ? null : txtDocsFilterLevel3.Text.Trim();
+                string? fileNameFilter = string.IsNullOrWhiteSpace(txtDocsFilterFileName.Text) ? null : txtDocsFilterFileName.Text.Trim();
+
+                var docs = await controller.LoadFilteredDocumentsAsync(level1Filter, level2Filter, level3Filter, fileNameFilter);
+                var lines = docs.Select(d => d.FileName).ToList();
+
+                await File.WriteAllLinesAsync(dialog.FileName, lines);
+                MessageBox.Show("Documents exported.", "Export", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Export failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
     }
 }

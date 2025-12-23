@@ -23,8 +23,13 @@ public sealed class CodeImportService
             return result;
         }
 
-        // Skip header row if it exists
-        var dataLines = lines.Skip(1);
+        // Detect header: skip first line only when level column is not numeric
+        var dataLines = lines.AsEnumerable();
+        if (IsHeader(lines[0]))
+        {
+            dataLines = dataLines.Skip(1);
+        }
+
         var codeSeriesData = new List<(CodeSeriesKey key, string description, int maxNumber)>();
 
         foreach (var line in dataLines)
@@ -73,6 +78,13 @@ public sealed class CodeImportService
         }
 
         return result;
+    }
+
+    private static bool IsHeader(string line)
+    {
+        var parts = ParseCsvLine(line);
+        if (parts.Length == 0) return false;
+        return !int.TryParse(parts[0].Trim(), out _);
     }
 
     private static CodeSeriesKey CreateCodeSeriesKey(int level, string code)
