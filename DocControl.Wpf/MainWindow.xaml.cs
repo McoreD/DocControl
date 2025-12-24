@@ -12,6 +12,7 @@ using System.ComponentModel;
 using System.Windows.Data;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 
 namespace DocControl.Wpf
 {
@@ -621,6 +622,7 @@ namespace DocControl.Wpf
             string? fileNameFilter = string.IsNullOrWhiteSpace(txtDocsFilterFileName.Text) ? null : txtDocsFilterFileName.Text.Trim();
             
             var docs = await controller.LoadFilteredDocumentsAsync(level1Filter, level2Filter, level3Filter, fileNameFilter);
+            var totalCount = await controller.GetDocumentsTotalCountAsync();
             
             foreach (var doc in docs)
             {
@@ -650,11 +652,11 @@ namespace DocControl.Wpf
             // Update result count label
             if (level1Filter != null || level2Filter != null || level3Filter != null || fileNameFilter != null)
             {
-                lblDocsResultCount.Text = $"Found {docs.Count} document(s)";
+                lblDocsResultCount.Text = $"Found {docs.Count} document(s) (Total: {totalCount})";
             }
             else
             {
-                lblDocsResultCount.Text = $"Showing {docs.Count} recent document(s)";
+                lblDocsResultCount.Text = $"Showing {docs.Count} recent document(s) (Total: {totalCount})";
             }
         }
 
@@ -877,6 +879,31 @@ namespace DocControl.Wpf
             }
         }
 
+        private async void btnCodesExportJson_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new SaveFileDialog
+            {
+                Filter = "JSON files|*.json|All files|*.*",
+                FileName = "codes.json",
+                Title = "Export Codes (JSON)"
+            };
+
+            if (dialog.ShowDialog() != true) return;
+
+            try
+            {
+                var items = await controller.LoadCodesDisplayAsync(documentConfig.EnableLevel4);
+                var payload = items.Select(i => new { level = i.Level, code = i.Code, description = i.Description }).ToList();
+                var json = JsonSerializer.Serialize(payload, new JsonSerializerOptions { WriteIndented = true });
+                await File.WriteAllTextAsync(dialog.FileName, json);
+                MessageBox.Show("Codes exported.", "Export", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Export failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
         private async void btnDocsExport_Click(object sender, RoutedEventArgs e)
         {
             var dialog = new SaveFileDialog
@@ -896,15 +923,67 @@ namespace DocControl.Wpf
                 string? fileNameFilter = string.IsNullOrWhiteSpace(txtDocsFilterFileName.Text) ? null : txtDocsFilterFileName.Text.Trim();
 
                 var docs = await controller.LoadFilteredDocumentsAsync(level1Filter, level2Filter, level3Filter, fileNameFilter);
-                var lines = docs.Select(d => d.FileName).ToList();
+                var sb = new StringBuilder();
+                sb.AppendLine("Code,FreeText");
+                foreach (var d in docs)
+                {
+                    var code = BuildDocumentCode(d);
+                    var free = (d.FreeText ?? string.Empty).Replace("\"", "\"\"");
+                    sb.AppendLine($"{code},\"{free}\"");
+                }
 
-                await File.WriteAllLinesAsync(dialog.FileName, lines);
+                await File.WriteAllTextAsync(dialog.FileName, sb.ToString());
                 MessageBox.Show("Documents exported.", "Export", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Export failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+        }
+
+        private async void btnDocsExportJson_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new SaveFileDialog
+            {
+                Filter = "JSON files|*.json|All files|*.*",
+                FileName = "documents.json",
+                Title = "Export Documents (JSON)"
+            };
+
+            if (dialog.ShowDialog() != true) return;
+
+            try
+            {
+                string? level1Filter = string.IsNullOrWhiteSpace(txtDocsFilterLevel1.Text) ? null : txtDocsFilterLevel1.Text.Trim();
+                string? level2Filter = string.IsNullOrWhiteSpace(txtDocsFilterLevel2.Text) ? null : txtDocsFilterLevel2.Text.Trim();
+                string? level3Filter = string.IsNullOrWhiteSpace(txtDocsFilterLevel3.Text) ? null : txtDocsFilterLevel3.Text.Trim();
+                string? fileNameFilter = string.IsNullOrWhiteSpace(txtDocsFilterFileName.Text) ? null : txtDocsFilterFileName.Text.Trim();
+
+                var docs = await controller.LoadFilteredDocumentsAsync(level1Filter, level2Filter, level3Filter, fileNameFilter);
+                var payload = docs.Select(d => new { code = BuildDocumentCode(d), freeText = d.FreeText ?? string.Empty }).ToList();
+                var json = JsonSerializer.Serialize(payload, new JsonSerializerOptions { WriteIndented = true });
+                await File.WriteAllTextAsync(dialog.FileName, json);
+                MessageBox.Show("Documents exported.", "Export", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Export failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private string BuildDocumentCode(DocumentRecord doc)
+        {
+            var sep = documentConfig.Separator;
+            var pad = documentConfig.PaddingLength;
+            var num = doc.Number.ToString().PadLeft(pad, '0');
+
+            var parts = new List<string> { doc.Level1, doc.Level2, doc.Level3 };
+            if (documentConfig.EnableLevel4 && !string.IsNullOrWhiteSpace(doc.Level4))
+            {
+                parts.Add(doc.Level4);
+            }
+            parts.Add(num);
+            return string.Join(sep, parts);
         }
     }
 }
