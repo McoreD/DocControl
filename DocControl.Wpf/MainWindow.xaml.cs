@@ -11,6 +11,8 @@ using Microsoft.Win32;
 using System.ComponentModel;
 using System.Windows.Data;
 using System.Linq;
+using System.Text;
+using System.Text.Json;
 
 namespace DocControl.Wpf
 {
@@ -28,6 +30,8 @@ namespace DocControl.Wpf
         private bool isPopulatingDropdowns = false;
         private GridViewColumnHeader? _lastDocsColumnHeader = null;
         private ListSortDirection _lastDocsDirection = ListSortDirection.Ascending;
+        private bool isGenerating = false;
+        private bool isRecommending = false;
 
         public MainWindow(MainController controller, DocumentConfig documentConfig, AiSettings aiSettings, AiClientOptions aiOptions)
         {
@@ -191,29 +195,40 @@ namespace DocControl.Wpf
 
         private async void btnGenerate_Click(object sender, RoutedEventArgs e)
         {
-            if (!ValidateLevels(out var msg))
-            {
-                MessageBox.Show(msg, "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            var key = BuildKeyFromInputs();
-            var freeText = txtFreeText.Text.Trim();
-            var ext = txtExtension.Text.Trim();
-
+            if (isGenerating) return;
+            isGenerating = true;
+            btnGenerate.IsEnabled = false;
             try
             {
-                var result = await controller.GenerateDocumentAsync(key, freeText, Environment.UserName, ext);
-                lblGenerateResult.Text = $"Created: {result.FileName} (audited)";
-
-                if (chkCopyAfterGenerate.IsChecked == true)
+                if (!ValidateLevels(out var msg))
                 {
-                    Clipboard.SetText(result.FileName);
+                    MessageBox.Show(msg, "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                var key = BuildKeyFromInputs();
+                var freeText = txtFreeText.Text.Trim();
+                var ext = txtExtension.Text.Trim();
+
+                try
+                {
+                    var result = await controller.GenerateDocumentAsync(key, freeText, Environment.UserName, ext);
+                    lblGenerateResult.Text = $"Created: {result.FileName} (audited)";
+
+                    if (chkCopyAfterGenerate.IsChecked == true)
+                    {
+                        Clipboard.SetText(result.FileName);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Generate failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
-            catch (Exception ex)
+            finally
             {
-                MessageBox.Show($"Generate failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                isGenerating = false;
+                btnGenerate.IsEnabled = true;
             }
         }
 
@@ -432,65 +447,82 @@ namespace DocControl.Wpf
 
         private async void btnRecommend_Click(object sender, RoutedEventArgs e)
         {
-            var query = txtNlq.Text.Trim();
-            if (string.IsNullOrWhiteSpace(query))
-            {
-                MessageBox.Show("Please enter a natural language query.", "Input Required", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
+            await RunRecommendAsync();
+        }
 
+        private async void txtNlq_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter && Keyboard.Modifiers == ModifierKeys.None)
+            {
+                e.Handled = true; // prevent newline and trigger recommend
+                await RunRecommendAsync();
+            }
+        }
+
+        private async Task RunRecommendAsync()
+        {
+            if (isRecommending) return;
+            isRecommending = true;
+            btnRecommend.IsEnabled = false;
             try
             {
-                // First interpret to show user what was understood
-                var interpretation = await controller.InterpretAsync(query);
-                if (interpretation != null)
+                var query = txtNlq.Text.Trim();
+                if (string.IsNullOrWhiteSpace(query))
                 {
-                    txtNlqResult.Text = $"Document Type: {interpretation.DocumentType}\nOwner: {interpretation.Owner}\n" +
-                                       $"Levels: {interpretation.Level1}/{interpretation.Level2}/{interpretation.Level3}/{interpretation.Level4}\n" +
-                                       $"Free Text: {interpretation.FreeText}";
-                }
-                else
-                {
-                    txtNlqResult.Text = "No interpretation available.";
-                }
-
-                // Then ask AI to pick best codes (or propose new) based on the query and catalog
-                var aiRec = await controller.RecommendWithAiAsync(query);
-                if (aiRec == null)
-                {
-                    lblRecommendResult.Text = "Recommended: -- (Next: --)";
-                    MessageBox.Show("AI did not return a recommendation.", "No Result", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show("Please enter a natural language query.", "Input Required", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
-                // Populate dropdowns from AI suggestion
-                isPopulatingDropdowns = true;
-                cmbLevel1.Text = aiRec.Level1;
-                await PopulateLevel2CodesAsync();
-                cmbLevel2.Text = aiRec.Level2;
-                await PopulateLevel3CodesAsync();
-                cmbLevel3.Text = aiRec.Level3;
-                if (documentConfig.EnableLevel4 && !string.IsNullOrWhiteSpace(aiRec.Level4))
+                try
                 {
-                    await PopulateLevel4CodesAsync();
-                    cmbLevel4.Text = aiRec.Level4;
+                    var interpretation = await controller.InterpretAsync(query);
+                    if (interpretation != null)
+                    {
+                        txtNlqResult.Text = $"Document Type: {interpretation.DocumentType}\nOwner: {interpretation.Owner}\n" +
+                                           $"Levels: {interpretation.Level1}/{interpretation.Level2}/{interpretation.Level3}/{interpretation.Level4}\n" +
+                                           $"Free Text: {interpretation.FreeText}";
+                    }
+                    else
+                    {
+                        txtNlqResult.Text = "No interpretation available.";
+                    }
+
+                    var aiRec = await controller.RecommendWithAiAsync(query);
+                    if (aiRec == null)
+                    {
+                        lblRecommendResult.Text = "Recommended: -- (Next: --)";
+                        MessageBox.Show("AI did not return a recommendation.", "No Result", MessageBoxButton.OK, MessageBoxImage.Information);
+                        return;
+                    }
+
+                    isPopulatingDropdowns = true;
+                    cmbLevel1.Text = aiRec.Level1;
+                    await PopulateLevel2CodesAsync();
+                    cmbLevel2.Text = aiRec.Level2;
+                    await PopulateLevel3CodesAsync();
+                    cmbLevel3.Text = aiRec.Level3;
+                    if (documentConfig.EnableLevel4 && !string.IsNullOrWhiteSpace(aiRec.Level4))
+                    {
+                        await PopulateLevel4CodesAsync();
+                        cmbLevel4.Text = aiRec.Level4;
+                    }
+                    isPopulatingDropdowns = false;
+
+                    lblRecommendResult.Text = $"Recommended: {aiRec.Level1}-{aiRec.Level2}-{aiRec.Level3}{(string.IsNullOrWhiteSpace(aiRec.Level4) ? string.Empty : "-" + aiRec.Level4)}";
                 }
-                isPopulatingDropdowns = false;
-
-                lblRecommendResult.Text = $"Recommended: {aiRec.Level1}-{aiRec.Level2}-{aiRec.Level3}{(string.IsNullOrWhiteSpace(aiRec.Level4) ? string.Empty : "-" + aiRec.Level4)}";
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Recommendation failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
-            catch (Exception ex)
+            finally
             {
-                MessageBox.Show($"Recommendation failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                isRecommending = false;
+                btnRecommend.IsEnabled = true;
             }
         }
 
-        private void btnUseSuggested_Click(object sender, RoutedEventArgs e)
-        {
-            btnRecommend_Click(sender, e);
-        }
-
-        private void btnCreateRecommended_Click(object sender, RoutedEventArgs e)
+        private async void btnCreateRecommended_Click(object sender, RoutedEventArgs e)
         {
             btnGenerate_Click(sender, e);
         }
@@ -590,6 +622,7 @@ namespace DocControl.Wpf
             string? fileNameFilter = string.IsNullOrWhiteSpace(txtDocsFilterFileName.Text) ? null : txtDocsFilterFileName.Text.Trim();
             
             var docs = await controller.LoadFilteredDocumentsAsync(level1Filter, level2Filter, level3Filter, fileNameFilter);
+            var totalCount = await controller.GetDocumentsTotalCountAsync();
             
             foreach (var doc in docs)
             {
@@ -619,11 +652,11 @@ namespace DocControl.Wpf
             // Update result count label
             if (level1Filter != null || level2Filter != null || level3Filter != null || fileNameFilter != null)
             {
-                lblDocsResultCount.Text = $"Found {docs.Count} document(s)";
+                lblDocsResultCount.Text = $"Found {docs.Count} document(s) (Total: {totalCount})";
             }
             else
             {
-                lblDocsResultCount.Text = $"Showing {docs.Count} recent document(s)";
+                lblDocsResultCount.Text = $"Showing {docs.Count} recent document(s) (Total: {totalCount})";
             }
         }
 
@@ -813,6 +846,144 @@ namespace DocControl.Wpf
             var combined = string.IsNullOrWhiteSpace(freeText) ? code : $"{code} {freeText}";
             Clipboard.SetText(combined);
             MessageBox.Show("Copied to clipboard.", "Copied", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        private async void btnCodesExportCsv_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new SaveFileDialog
+            {
+                Filter = "CSV files|*.csv|All files|*.*",
+                FileName = "codes.csv",
+                Title = "Export Codes"
+            };
+
+            if (dialog.ShowDialog() != true) return;
+
+            try
+            {
+                var items = await controller.LoadCodesDisplayAsync(documentConfig.EnableLevel4);
+                var sb = new StringBuilder();
+                sb.AppendLine("Level,Code,Code Description");
+                foreach (var item in items)
+                {
+                    var desc = item.Description?.Replace("\"", "\"\"") ?? string.Empty;
+                    sb.AppendLine($"{item.Level},{item.Code},\"{desc}\"");
+                }
+
+                await File.WriteAllTextAsync(dialog.FileName, sb.ToString());
+                MessageBox.Show("Codes exported.", "Export", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Export failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private async void btnCodesExportJson_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new SaveFileDialog
+            {
+                Filter = "JSON files|*.json|All files|*.*",
+                FileName = "codes.json",
+                Title = "Export Codes (JSON)"
+            };
+
+            if (dialog.ShowDialog() != true) return;
+
+            try
+            {
+                var items = await controller.LoadCodesDisplayAsync(documentConfig.EnableLevel4);
+                var payload = items.Select(i => new { level = i.Level, code = i.Code, description = i.Description }).ToList();
+                var json = JsonSerializer.Serialize(payload, new JsonSerializerOptions { WriteIndented = true });
+                await File.WriteAllTextAsync(dialog.FileName, json);
+                MessageBox.Show("Codes exported.", "Export", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Export failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private async void btnDocsExport_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new SaveFileDialog
+            {
+                Filter = "CSV files|*.csv|All files|*.*",
+                FileName = "documents.csv",
+                Title = "Export Documents"
+            };
+
+            if (dialog.ShowDialog() != true) return;
+
+            try
+            {
+                string? level1Filter = string.IsNullOrWhiteSpace(txtDocsFilterLevel1.Text) ? null : txtDocsFilterLevel1.Text.Trim();
+                string? level2Filter = string.IsNullOrWhiteSpace(txtDocsFilterLevel2.Text) ? null : txtDocsFilterLevel2.Text.Trim();
+                string? level3Filter = string.IsNullOrWhiteSpace(txtDocsFilterLevel3.Text) ? null : txtDocsFilterLevel3.Text.Trim();
+                string? fileNameFilter = string.IsNullOrWhiteSpace(txtDocsFilterFileName.Text) ? null : txtDocsFilterFileName.Text.Trim();
+
+                var docs = await controller.LoadFilteredDocumentsAsync(level1Filter, level2Filter, level3Filter, fileNameFilter);
+                var sb = new StringBuilder();
+                sb.AppendLine("Code,FreeText");
+                foreach (var d in docs)
+                {
+                    var code = BuildDocumentCode(d);
+                    var free = (d.FreeText ?? string.Empty).Replace("\"", "\"\"");
+                    sb.AppendLine($"{code},\"{free}\"");
+                }
+
+                await File.WriteAllTextAsync(dialog.FileName, sb.ToString());
+                MessageBox.Show("Documents exported.", "Export", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Export failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private async void btnDocsExportJson_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new SaveFileDialog
+            {
+                Filter = "JSON files|*.json|All files|*.*",
+                FileName = "documents.json",
+                Title = "Export Documents (JSON)"
+            };
+
+            if (dialog.ShowDialog() != true) return;
+
+            try
+            {
+                string? level1Filter = string.IsNullOrWhiteSpace(txtDocsFilterLevel1.Text) ? null : txtDocsFilterLevel1.Text.Trim();
+                string? level2Filter = string.IsNullOrWhiteSpace(txtDocsFilterLevel2.Text) ? null : txtDocsFilterLevel2.Text.Trim();
+                string? level3Filter = string.IsNullOrWhiteSpace(txtDocsFilterLevel3.Text) ? null : txtDocsFilterLevel3.Text.Trim();
+                string? fileNameFilter = string.IsNullOrWhiteSpace(txtDocsFilterFileName.Text) ? null : txtDocsFilterFileName.Text.Trim();
+
+                var docs = await controller.LoadFilteredDocumentsAsync(level1Filter, level2Filter, level3Filter, fileNameFilter);
+                var payload = docs.Select(d => new { code = BuildDocumentCode(d), freeText = d.FreeText ?? string.Empty }).ToList();
+                var json = JsonSerializer.Serialize(payload, new JsonSerializerOptions { WriteIndented = true });
+                await File.WriteAllTextAsync(dialog.FileName, json);
+                MessageBox.Show("Documents exported.", "Export", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Export failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private string BuildDocumentCode(DocumentRecord doc)
+        {
+            var sep = documentConfig.Separator;
+            var pad = documentConfig.PaddingLength;
+            var num = doc.Number.ToString().PadLeft(pad, '0');
+
+            var parts = new List<string> { doc.Level1, doc.Level2, doc.Level3 };
+            if (documentConfig.EnableLevel4 && !string.IsNullOrWhiteSpace(doc.Level4))
+            {
+                parts.Add(doc.Level4);
+            }
+            parts.Add(num);
+            return string.Join(sep, parts);
         }
     }
 }

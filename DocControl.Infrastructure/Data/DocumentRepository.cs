@@ -251,4 +251,14 @@ public sealed class DocumentRepository
 
         await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
     }
+
+    public async Task<int> GetTotalCountAsync(CancellationToken cancellationToken = default)
+    {
+        await using var conn = factory.Create();
+        await conn.OpenAsync(cancellationToken).ConfigureAwait(false);
+        var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT COUNT(1) FROM Documents";
+        var result = await cmd.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
+        return Convert.ToInt32(result);
+    }
 }

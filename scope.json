@@ -1,0 +1,116 @@
+{
+  "product": {
+    "name": "DocControl",
+    "type": "desktop_wpf_app",
+    "goal": "Generate, catalog, import, and audit document codes and filenames using hierarchical codes with optional AI assistance.",
+    "target_runtime": ".NET 10"
+  },
+  "storage": {
+    "db": {
+      "engine": "SQLite",
+      "file_location": "%USERPROFILE%/Documents/DocControl/doccontrol.db",
+      "tables": {
+        "Config": "Key (PK), Value",
+        "CodeSeries": "Id (PK), Level1, Level2, Level3, Level4 (nullable), Description, NextNumber; unique(Level1,Level2,Level3,Level4)",
+        "Documents": "Id (PK), Level1, Level2, Level3, Level4 (nullable), Number, FreeText, FileName, CreatedBy, CreatedAt (ISO string), OriginalQuery, CodeSeriesId FK to CodeSeries; unique(Level1,Level2,Level3,Level4,Number)",
+        "Audit": "Id (PK), Action, Payload, CreatedBy, CreatedAt (ISO string), DocumentId FK to Documents"
+      }
+    },
+    "code_catalog": {
+      "file": "%USERPROFILE%/Documents/DocControl/codes.json",
+      "content": "Array of {level:int, code:string, description?:string}; used for listing/selection and imported from CodeSeries."
+    },
+    "settings": {
+      "file": "%USERPROFILE%/Documents/DocControl/settings.json",
+      "config_keys": "DocumentConfig, AiSettings stored in Config table; API keys stored in JSON via JsonFileApiKeyStore (plain text)."
+    }
+  },
+  "configuration": {
+    "documentConfig": {
+      "LevelCount": "3 or 4",
+      "Level1Name": "Level1",
+      "Level2Name": "Level2",
+      "Level3Name": "Level3",
+      "Level4Name": "Level4",
+      "EnableLevel4": "bool toggle",
+      "PaddingLength": "int, default 3",
+      "Separator": "string, default '-'"
+    },
+    "aiSettings": {
+      "Provider": "OpenAi | Gemini",
+      "OpenAiModel": "default gpt-4.1",
+      "GeminiModel": "default gemini-3-flash-preview",
+      "OpenAiCredentialName": "DocControl:OpenAI",
+      "GeminiCredentialName": "DocControl:Gemini"
+    }
+  },
+  "ai": {
+    "providers": ["OpenAI", "Gemini"],
+    "options": "ApiKey, Model, Endpoint per provider",
+    "orchestration": "AiOrchestrator picks provider, delegates to IAiClient",
+    "features": {
+      "interpret_nlq": "NlqService.Execute -> structured JSON {documentType, owner, level1-4, freeText}",
+      "recommend_code": "NlqService.RecommendCodeAsync -> structured JSON {level1-4, freeText, reason} using existing catalog when possible"
+    }
+  },
+  "data_models": {
+    "CodeSeriesKey": "Level1, Level2, Level3, Level4?",
+    "DocumentRecord": "Id, Level1-4, Number, FreeText, FileName, CreatedBy, CreatedAtUtc",
+    "AuditEntry": "Id, Action, Payload?, CreatedBy, CreatedAtUtc, DocumentId?",
+    "ParsedFileName": "SeriesKey, Number, FreeText, Extension",
+    "DocumentImportEntry": "Code, FileName",
+    "ImportSeriesSummary": "SeriesKey, MaxNumber, NextNumber"
+  },
+  "core_services": {
+    "NumberAllocator": "Ensures CodeSeries row, reads max Number from Documents, chooses max(current NextNumber, maxDoc+1), increments NextNumber transactionally.",
+    "CodeGenerator": "Builds code and filename using separator, padding, optional level4, optional free text and extension.",
+    "FileNameParser": "Validates filenames vs separator/padding; parses into CodeSeriesKey, number, free text, extension; alphanumeric with _ or - only.",
+    "DocumentService": "Create document -> allocate number, compose filename, insert Documents, audit 'DocumentCreated'.",
+    "ImportService": "Validate filenames, produce parsed entries, optionally seed CodeSeries.NextNumber, return summaries/errors.",
+    "DocumentImportService": "Parse freeform lines 'code filename' (whitespace split, '#' comments ignored).",
+    "RecommendationService": "Return exists + suggested next number based on Documents max.",
+    "CodeImportService": "CSV import level,code,description -> seed CodeSeries/CodeCatalog with NextNumber start at 1.",
+    "CodeSeriesRepository": "Manage CodeSeries SQLite + codes.json, CRUD single-level codes with validation of document references, migrate existing codes to JSON.",
+    "DocumentRepository": "CRUD Documents, recent/filtered queries, upsert imported docs, clear all (with audit cleanup).",
+    "AuditRepository": "Insert and query audit entries with paging/filter by action/user.",
+    "ConfigService": "Load/save DocumentConfig and AiSettings via Config table; load/save API keys via JsonFileApiKeyStore; build AiClientOptions."
+  },
+  "ui": {
+    "shell": "MainWindow (WPF) with tabs",
+    "tabs": {
+      "Recommend": "Textbox for natural language query; Interpret & Recommend button/Enter triggers AI interpret + AI code recommendation; populates code dropdowns; shows structured interpretation and recommended code string.",
+      "Generate": "Level1-3 combos (editable, populated from codes.json), optional Level4 toggle/combo; free text; extension; copy-after-generate option; generates filename/code, saves document, audits; labels show result and no-delete note.",
+      "Codes": "ListView of codes with level/code/description; buttons: Edit Codes dialog, Import CSV, Refresh, Delete Selected (blocks if documents reference), Purge All Codes (double confirmation, blocked if docs exist).",
+      "Documents": "Filters by Level1-3 text and free-text/filename; list recent or filtered docs with sortable columns; double-click shows details; Copy to Clipboard combines code + free text; Refresh clears filters.",
+      "Audit": "Filter by user/action; paged list (50/page) shows timestamp, user, action, document ID, payload; prev/next paging.",
+      "Import": "Import Documents CSV (code + filename rows); shows valid/invalid counts, up to 50 error lines; displays per-series summaries (series text, max, next); Seed Selected to update counters; toggle to show counters.",
+      "Settings": "Separator, padding length, enable level4 toggle; AI provider/model selection; API key inputs (OpenAI/Gemini); Save persists config + keys and refreshes runtime options."
+    }
+  },
+  "workflows": {
+    "generate_document": "Validate alphanumeric Levels1-3 (and 4 if enabled) non-empty; allocate number; build filename; insert Documents; audit; optionally copy filename to clipboard.",
+    "nlq_recommendation": "User query -> Interpret (structured fields) -> RecommendWithAi uses catalog to pick/suggest codes; UI pre-fills level combos; result label shows recommended path.",
+    "document_import": "CSV lines parsed to {code, filename}; validate code format vs separator/level4; seed CodeSeries NextNumber; upsert Documents with provided numbers and freeText=fileName; show summaries and seed counters on demand.",
+    "code_import": "CSV with header; each row level,code,description -> seeds codes.json/CodeSeries NextNumber=1; reports successes/errors.",
+    "code_edit_delete": "Edit dialog (external) for CRUD; delete blocked if documents reference code; purge blocked if any documents exist.",
+    "audit_view": "Paged retrieval with optional action/user filter.",
+    "settings_save": "Updates DocumentConfig and AiSettings, persists to Config + key store, rebuilds in-memory AiClientOptions."
+  },
+  "validation_rules": {
+    "codes": "Alphanumeric plus _ or -; required Level1-3; Level4 required if enabled.",
+    "filenames_parse": "Must match separator segments; numeric tail for number; optional free text after number; optional extension.",
+    "deletion": "Cannot delete codes referenced by Documents; cannot purge codes if any documents exist.",
+    "import": "Document code parts count must match level4 enabled/disabled; number must be numeric."
+  },
+  "tech_stack": {
+    "ui": "WPF (.NET 10)",
+    "di": "Microsoft.Extensions.DependencyInjection",
+    "db": "Microsoft.Data.Sqlite",
+    "ai": "Custom IAiClient for OpenAI/Gemini via HTTP clients",
+    "serialization": "System.Text.Json"
+  },
+  "security_notes": {
+    "api_keys": "Stored in plain-text JSON `settings.json`; relies on filesystem protections.",
+    "audit": "All document creations logged; Documents marked non-deletable in UI guidance though DB allows deletions only via code changes."
+  }
+}

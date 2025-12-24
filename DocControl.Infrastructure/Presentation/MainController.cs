@@ -268,6 +268,9 @@ public sealed class MainController
         return await nlqService.RecommendCodeAsync(query, catalog, cancellationToken).ConfigureAwait(false);
     }
 
+    public Task<int> GetDocumentsTotalCountAsync(CancellationToken cancellationToken = default)
+        => documentRepository.GetTotalCountAsync(cancellationToken);
+
     private bool TryParseCodeOnly(string code, out CodeSeriesKey key, out int number, out string reason)
     {
         key = new CodeSeriesKey { Level1 = string.Empty, Level2 = string.Empty, Level3 = string.Empty, Level4 = null };
