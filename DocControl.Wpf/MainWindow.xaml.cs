@@ -922,7 +922,7 @@ namespace DocControl.Wpf
                 string? level3Filter = string.IsNullOrWhiteSpace(txtDocsFilterLevel3.Text) ? null : txtDocsFilterLevel3.Text.Trim();
                 string? fileNameFilter = string.IsNullOrWhiteSpace(txtDocsFilterFileName.Text) ? null : txtDocsFilterFileName.Text.Trim();
 
-                var docs = await controller.LoadFilteredDocumentsAsync(level1Filter, level2Filter, level3Filter, fileNameFilter);
+                var docs = await controller.LoadDocumentsForExportAsync(level1Filter, level2Filter, level3Filter, fileNameFilter);
                 var sb = new StringBuilder();
                 sb.AppendLine("Code,FreeText");
                 foreach (var d in docs)
@@ -959,7 +959,7 @@ namespace DocControl.Wpf
                 string? level3Filter = string.IsNullOrWhiteSpace(txtDocsFilterLevel3.Text) ? null : txtDocsFilterLevel3.Text.Trim();
                 string? fileNameFilter = string.IsNullOrWhiteSpace(txtDocsFilterFileName.Text) ? null : txtDocsFilterFileName.Text.Trim();
 
-                var docs = await controller.LoadFilteredDocumentsAsync(level1Filter, level2Filter, level3Filter, fileNameFilter);
+                var docs = await controller.LoadDocumentsForExportAsync(level1Filter, level2Filter, level3Filter, fileNameFilter);
                 var payload = docs.Select(d => new { code = BuildDocumentCode(d), freeText = d.FreeText ?? string.Empty }).ToList();
                 var json = JsonSerializer.Serialize(payload, new JsonSerializerOptions { WriteIndented = true });
                 await File.WriteAllTextAsync(dialog.FileName, json);

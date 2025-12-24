@@ -271,6 +271,12 @@ public sealed class MainController
     public Task<int> GetDocumentsTotalCountAsync(CancellationToken cancellationToken = default)
         => documentRepository.GetTotalCountAsync(cancellationToken);
 
+    public Task<IReadOnlyList<DocumentRecord>> LoadDocumentsForExportAsync(string? level1Filter = null, string? level2Filter = null, string? level3Filter = null, string? fileNameFilter = null, CancellationToken cancellationToken = default)
+    {
+        // Always fetch matching documents without limiting to recent 50
+        return documentRepository.GetFilteredAsync(level1Filter, level2Filter, level3Filter, fileNameFilter, int.MaxValue, cancellationToken);
+    }
+
     private bool TryParseCodeOnly(string code, out CodeSeriesKey key, out int number, out string reason)
     {
         key = new CodeSeriesKey { Level1 = string.Empty, Level2 = string.Empty, Level3 = string.Empty, Level4 = null };
